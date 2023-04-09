@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/xremming/abborre/views/utils"
+	"github.com/xremming/abborre/esox"
 )
 
-var defaultNavItems = []utils.NavItem{
+var defaultNavItems = []esox.NavItem{
 	{Name: "Home", URL: "/"},
 	{Name: "Events", URL: "/events"},
 	{Name: "Create Event", URL: "/events/create"},
@@ -17,7 +17,7 @@ var defaultNavItems = []utils.NavItem{
 //go:embed templates/*
 var templates embed.FS
 
-var renderer = utils.NewRenderer(templates, "templates", "base.html")
+var renderer = esox.NewRenderer(templates, "templates", "base.html")
 
 var errorTmpl = renderer.GetTemplate("error.html")
 

@@ -9,7 +9,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"github.com/rs/xid"
-	"github.com/xremming/abborre/models/utils"
+	"github.com/xremming/abborre/esox"
 )
 
 type Event struct {
@@ -36,7 +36,7 @@ func CreateEvent(ctx context.Context, dynamo *dynamodb.Client, in CreateEventIn)
 	ttl := in.StartTime.Add(180 * 24 * time.Hour)
 
 	event := Event{
-		Base:      newBase("event", utils.JoinID("event", id)).withTTL(ttl),
+		Base:      newBase("event", esox.JoinID("event", id)).withTTL(ttl),
 		Name:      in.Name,
 		StartTime: in.StartTime,
 		EndTime:   in.EndTime,
@@ -72,7 +72,7 @@ func GetEvent(ctx context.Context, dynamo *dynamodb.Client, in GetEventIn) (GetE
 		TableName: &in.TableName,
 		Key: map[string]types.AttributeValue{
 			"pk": &types.AttributeValueMemberS{Value: "event"},
-			"sk": &types.AttributeValueMemberS{Value: utils.JoinID("event", in.ID)},
+			"sk": &types.AttributeValueMemberS{Value: esox.JoinID("event", in.ID)},
 		},
 	})
 	if err != nil {

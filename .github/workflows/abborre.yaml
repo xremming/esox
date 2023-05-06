@@ -61,7 +61,7 @@ jobs:
 
   deploy:
     needs: ["gofmt", "govet", "gotest", "tffmt", "tfvalidate"]
-    if: "${{ github.ref == 'refs/heads/main' }}"
+    if: "${{ github.ref == 'refs/heads/master' }}"
     name: "deploy ${{ matrix.env }}"
     runs-on: "ubuntu-latest"
     strategy:

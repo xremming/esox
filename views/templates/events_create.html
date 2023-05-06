@@ -1,7 +1,23 @@
 {{ define "body" }}
-<form method="post" class="events-create__form">
-  <input type="text" name="name" placeholder="Name" />
-  <input type="datetime-local" name="startTime" placeholder="Start Time" />
+<form method="post" class="form-control">
+  <div class="form-field">
+    <label for="name">Name*</label>
+    <input id="name" type="text" name="name" />
+    {{ range (.Form.Field "name").Errors }}
+    <div>{{ . }}</div>
+    {{ end }}
+  </div>
+
+  <div class="form-field">
+    <label for="startTime">Start Time*</label>
+    <input id="startTime" type="datetime-local" name="startTime" />
+  </div>
+
+  <div class="form-field">
+    <label for="endTime">End Time</label>
+    <input id="endTime" type="datetime-local" name="endTime" />
+  </div>
+
   <input type="submit" value="Create" />
 </form>
 {{ end }}

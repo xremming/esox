@@ -24,8 +24,9 @@ type ViewData struct {
 
 	Title       string
 	Description string
-	NavItems    []NavItem
 	Flashes     []FlashData
+	NavItems    []NavItem
+	Form        *FormData
 	Data        any
 }
 
@@ -58,6 +59,11 @@ func (d *ViewData) WithFlashWarning(message string) *ViewData {
 
 func (d *ViewData) WithFlashError(message string) *ViewData {
 	return d.WithFlash(FlashLevelError, message)
+}
+
+func (d *ViewData) WithForm(form *FormData) *ViewData {
+	d.Form = form
+	return d
 }
 
 func (d *ViewData) WithData(data any) *ViewData {

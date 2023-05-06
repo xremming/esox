@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strconv"
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -23,13 +24,20 @@ func GetEnvOrDefault(key, defaultValue string) string {
 	if value, ok := os.LookupEnv(key); ok {
 		return value
 	}
+
 	return defaultValue
 }
 
 func GetEnvBoolOrDefault(key string, defaultValue bool) bool {
 	if value, ok := os.LookupEnv(key); ok {
-		return !(value == "false" || value == "0" || value == "")
+		res, err := strconv.ParseBool(value)
+		if err != nil {
+			return defaultValue
+		}
+
+		return res
 	}
+
 	return defaultValue
 }
 

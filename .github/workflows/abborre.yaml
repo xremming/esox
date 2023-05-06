@@ -70,6 +70,7 @@ jobs:
     strategy:
       matrix:
         env: ["test", "prod"]
+    environment: "${{ matrix.env }}"
     steps:
       - uses: "actions/checkout@v2"
       - uses: "aws-actions/configure-aws-credentials@v2"

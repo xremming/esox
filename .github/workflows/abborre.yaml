@@ -50,5 +50,6 @@ jobs:
       - uses: hashicorp/setup-terraform@v2
       - run: terraform init -backend=false
         working-directory: ./infra
+      - run: touch abborre-lambda.zip
       - run: terraform validate
         working-directory: ./infra

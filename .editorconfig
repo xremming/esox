@@ -12,5 +12,5 @@ insert_final_newline = true
 indent_style = tab
 indent_size = 8
 
-[*.{css,html,yaml,json}]
+[*.{css,html,yaml,json,tf}]
 indent_size = 2

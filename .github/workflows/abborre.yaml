@@ -6,50 +6,55 @@ on:
 jobs:
   gofmt:
     name: "go fmt"
-    runs-on: ubuntu-latest
+    runs-on: "ubuntu-latest"
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-go@v4
+      - uses: "actions/checkout@v2"
+      - uses: "actions/setup-go@v4"
         with:
-          go-version-file: ./go.mod
-      - run: gofmt -l .
+          go-version-file: "./go.mod"
+
+      - run: "test -z $(gofmt -l .)"
 
   govet:
     name: "go vet"
-    runs-on: ubuntu-latest
+    runs-on: "ubuntu-latest"
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-go@v4
+      - uses: "actions/checkout@v2"
+      - uses: "actions/setup-go@v4"
         with:
-          go-version-file: ./go.mod
-      - run: go vet ./...
+          go-version-file: "./go.mod"
+
+      - run: "go vet ./..."
 
   gotest:
     name: "go test"
-    runs-on: ubuntu-latest
+    runs-on: "ubuntu-latest"
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-go@v4
+      - uses: "actions/checkout@v2"
+      - uses: "actions/setup-go@v4"
         with:
-          go-version-file: ./go.mod
-      - run: go test ./...
+          go-version-file: "./go.mod"
+
+      - run: "go test ./..."
 
   tffmt:
     name: "tf fmt"
-    runs-on: ubuntu-latest
+    runs-on: "ubuntu-latest"
     steps:
-      - uses: actions/checkout@v2
-      - uses: hashicorp/setup-terraform@v2
-      - run: terraform fmt -check -diff -recursive
+      - uses: "actions/checkout@v2"
+      - uses: "hashicorp/setup-terraform@v2"
+
+      - run: "terraform fmt -check -diff -recursive"
 
   tfvalidate:
     name: "tf validate"
-    runs-on: ubuntu-latest
+    runs-on: "ubuntu-latest"
     steps:
-      - uses: actions/checkout@v2
-      - uses: hashicorp/setup-terraform@v2
-      - run: terraform init -backend=false
-        working-directory: ./infra
-      - run: touch abborre-lambda.zip
-      - run: terraform validate
-        working-directory: ./infra
+      - uses: "actions/checkout@v2"
+      - uses: "hashicorp/setup-terraform@v2"
+
+      - run: "terraform init -backend=false"
+        working-directory: "./infra"
+      - run: "touch abborre-lambda.zip"
+      - run: "terraform validate"
+        working-directory: "./infra"

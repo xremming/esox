@@ -9,7 +9,7 @@ resource "aws_lambda_function" "homepage" {
 
   function_name = "abborre-${var.env}-homepage"
   role          = aws_iam_role.homepage.arn
-  handler       = "abborre-lambda"
+  handler       = "abborre"
   runtime       = "go1.x"
   timeout       = 5
   memory_size   = 512

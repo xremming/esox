@@ -30,12 +30,6 @@ func setupMiddleware(log zerolog.Logger) alice.Chain {
 	c = c.Append(hlog.MethodHandler("method"))
 	c = c.Append(hlog.URLHandler("url"))
 	c = c.Append(hlog.RefererHandler("referer"))
-	c = c.Append(func(next http.Handler) http.Handler {
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			w.Header().Add("Content-Type", "text/html; charset=utf-8")
-			next.ServeHTTP(w, r)
-		})
-	})
 
 	return c
 }

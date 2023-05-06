@@ -10,6 +10,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/aws/aws-lambda-go/lambdaurl"
 	"github.com/xremming/abborre/app"
 	"github.com/xremming/abborre/esox"
 )
@@ -52,13 +53,19 @@ func main() {
 
 	handler := app.NewHandler(ctx, app.Configuration{IsDev: *flagDev, TableName: *flagTableName})
 
+	// If AWS_LAMBDA_RUNTIME_API is set, start the Lambda runtime API.
+	if _, ok := os.LookupEnv("AWS_LAMBDA_RUNTIME_API"); ok {
+		lambdaurl.Start(handler)
+		return
+	}
+
 	addr := *flagHost + ":" + *flagPort
 	srv := &http.Server{
 		Addr:    addr,
 		Handler: handler,
 	}
 
-	// Start server in goprocess.
+	// Start server in gothread.
 	go func() {
 		log.Info().
 			Bool("dev", *flagDev).

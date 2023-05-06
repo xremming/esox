@@ -11,9 +11,9 @@ elif [ "$1" != "dev" ] && [ "$1" != "test" ] && [ "$1" != "prod" ]; then
 fi
 
 echo "Building..."
-GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -o abborre-lambda -tags lambda.norpc ./cmd/lambda
+GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -o abborre -tags lambda.norpc ./cmd/
 rm -f abborre-lambda.zip
-zip abborre-lambda.zip abborre-lambda
+zip abborre-lambda.zip abborre
 
 export AWS_REGION=eu-north-1
 

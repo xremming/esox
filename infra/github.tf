@@ -38,7 +38,7 @@ data "aws_iam_policy_document" "github_actions_policy" {
     sid    = "UpdateFunctionCode"
     effect = "Allow"
 
-    actions   = ["lambda:UpdateFunctionCode"]
+    actions   = ["lambda:UpdateFunctionCode", "lambda:GetFunctionConfiguration"]
     resources = [for homepage in module.homepage : homepage.lambda_arn]
   }
 }

@@ -13,14 +13,14 @@ import (
 
 var eventsListTmpl = renderer.GetTemplate("events_list.html")
 
-func EventsList(cfg aws.Config, tableName *string) http.HandlerFunc {
+func EventsList(cfg aws.Config, tableName string) http.HandlerFunc {
 	dynamo := dynamodb.NewFromConfig(cfg)
 
 	return func(w http.ResponseWriter, r *http.Request) {
 		log := hlog.FromRequest(r)
 
 		pager := dynamodb.NewQueryPaginator(dynamo, &dynamodb.QueryInput{
-			TableName:              tableName,
+			TableName:              &tableName,
 			KeyConditionExpression: aws.String("pk = :pk"),
 			ExpressionAttributeValues: map[string]types.AttributeValue{
 				":pk": &types.AttributeValueMemberS{Value: "event"},

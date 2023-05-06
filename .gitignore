@@ -1,2 +1,7 @@
-abborre
+# build artifacts
+abborre-lambda
+abborre-lambda.zip
+abborre-local
+
+# terraform
 .terraform

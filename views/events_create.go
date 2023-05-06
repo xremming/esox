@@ -40,7 +40,7 @@ func parseCreateEventForm(form url.Values) (CreateEventForm, esox.FormParser) {
 
 var eventsCreateTmpl = renderer.GetTemplate("events_create.html")
 
-func EventsCreate(cfg aws.Config, tableName *string) http.HandlerFunc {
+func EventsCreate(cfg aws.Config, tableName string) http.HandlerFunc {
 	dynamo := dynamodb.NewFromConfig(cfg)
 
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -80,7 +80,7 @@ func EventsCreate(cfg aws.Config, tableName *string) http.HandlerFunc {
 			log.Info().Interface("form", form).Msg("Create event")
 
 			_, err = models.CreateEvent(r.Context(), dynamo, models.CreateEventIn{
-				TableName: *tableName,
+				TableName: tableName,
 				Name:      parsedForm.Name,
 				StartTime: parsedForm.StartTime,
 				EndTime:   parsedForm.EndTime,

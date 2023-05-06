@@ -1,5 +1,5 @@
 resource "aws_dynamodb_table" "homepage" {
-  name         = "abborre-${terraform.workspace}-homepage"
+  name         = "abborre-${var.env}-homepage"
   billing_mode = "PAY_PER_REQUEST"
 
   hash_key  = "pk"

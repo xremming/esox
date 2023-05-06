@@ -58,3 +58,21 @@ jobs:
       - run: "touch abborre-lambda.zip"
       - run: "terraform validate"
         working-directory: "./infra"
+
+  deploy:
+    needs: ["gofmt", "govet", "gotest", "tffmt", "tfvalidate"]
+    if: "${{ github.ref == 'refs/heads/main' }}"
+    name: "deploy ${{ matrix.env }}"
+    runs-on: "ubuntu-latest"
+    strategy:
+      matrix:
+        env: ["test", "prod"]
+    steps:
+      - uses: "actions/checkout@v2"
+      - uses: "aws-actions/configure-aws-credentials@v1-node16"
+        with:
+          aws-region: "eu-north-1"
+          role-to-assume: "arn:aws:iam::865405253382:role/GitHub-Actions"
+          role-session-name: "GitHubActions-${{ matrix.env }}-deploy"
+
+      - run: "./deploy.sh ${{ matrix.env }}"

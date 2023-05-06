@@ -15,12 +15,15 @@ resource "aws_lambda_function" "homepage" {
   memory_size   = 512
   publish       = false
 
-  depends_on = [aws_cloudwatch_log_group.homepage]
-
   environment {
     variables = {
       TABLE_NAME = aws_dynamodb_table.homepage.name
     }
+  }
+
+  depends_on = [aws_cloudwatch_log_group.homepage]
+  lifecycle {
+    ignore_changes = [filename, source_code_hash]
   }
 }
 

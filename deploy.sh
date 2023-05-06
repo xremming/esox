@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -eo pipefail
+
 if [ $# -ne 1 ]; then
     echo "Usage: $0 dev|test|prod"
     exit 1

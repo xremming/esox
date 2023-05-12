@@ -1,12 +1,11 @@
 package views
 
 import (
-	"embed"
 	"net/http"
+	"os"
 )
 
-//go:embed static/*
-var static embed.FS
+var static = os.DirFS(".")
 
 func Static() http.Handler {
 	return http.FileServer(http.FS(static))

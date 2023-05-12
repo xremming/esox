@@ -1,9 +1,9 @@
 package views
 
 import (
-	"embed"
 	"fmt"
 	"net/http"
+	"os"
 
 	"github.com/xremming/abborre/esox"
 )
@@ -14,10 +14,10 @@ var defaultNavItems = []esox.NavItem{
 	{Name: "Create Event", URL: "/events/create"},
 }
 
-//go:embed templates/*
-var templates embed.FS
-
-var renderer = esox.NewRenderer(templates, "templates", "base.html")
+var (
+	templates = os.DirFS(".")
+	renderer  = esox.NewRenderer(templates, "templates", "base.html")
+)
 
 var errorTmpl = renderer.GetTemplate("error.html")
 

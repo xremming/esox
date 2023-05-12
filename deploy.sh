@@ -13,7 +13,7 @@ fi
 echo "Building..."
 GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -o abborre -tags lambda.norpc ./cmd/
 rm -f abborre-lambda.zip
-zip abborre-lambda.zip abborre
+zip -r abborre-lambda.zip ./abborre ./templates/ ./static/
 
 export AWS_REGION=eu-north-1
 

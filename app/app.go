@@ -75,12 +75,24 @@ func NewHandler(ctx context.Context, conf Configuration) *http.ServeMux {
 		log.Fatal().Err(err).Msg("Failed to configure AWS")
 	}
 
+	notFoundMiddleware := func(next http.Handler) http.Handler {
+		notFound := views.NotFound()
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if r.URL.Path != "/" {
+				notFound(w, r)
+				return
+			}
+
+			next.ServeHTTP(w, r)
+		})
+	}
+
 	c := setupMiddleware(*log)
 	mux := http.ServeMux{}
 	mux.Handle("/static/", c.Then(views.Static()))
 	mux.Handle("/events/create", c.Then(views.EventsCreate(cfg, conf.TableName)))
 	mux.Handle("/events", c.Then(views.EventsList(cfg, conf.TableName)))
-	mux.Handle("/", c.Then(views.Home()))
+	mux.Handle("/", c.Append(notFoundMiddleware).Then(views.Home()))
 
 	return &mux
 }

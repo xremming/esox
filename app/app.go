@@ -80,7 +80,7 @@ func NewHandler(ctx context.Context, conf Configuration) *http.ServeMux {
 	mux.Handle("/static/", c.Then(views.Static()))
 	mux.Handle("/events/create", c.Then(views.EventsCreate(cfg, conf.TableName)))
 	mux.Handle("/events", c.Then(views.EventsList(cfg, conf.TableName)))
-	mux.Handle("/", c.ThenFunc(views.Home()))
+	mux.Handle("/", c.Then(views.Home()))
 
 	return &mux
 }

@@ -1,7 +1,13 @@
 {{ define "body" }}
 <ul>
   {{ range .Data }}
-  <li>{{ .PartitionKey }} - {{ .SortKey }} (Created: {{ .Created}}, Updated: {{ .Updated }})</li>
+  <li>{{ .Name }}</li>
+  <ul>
+    <li>Starts: {{ .StartTime }}</li>
+    <li>Ends: {{ .EndTime }}</li>
+    <li>Created: {{ .Created }}</li>
+    <li>Updated: {{ .Updated }}</li>
+  </ul>
   {{ end }}
 </ul>
 {{ end }}

@@ -88,9 +88,11 @@ func (f *FormParser) ParseStringPointer(form url.Values, fieldName string, opts 
 type ParseTimeOpts struct {
 	Required bool
 	Location *time.Location
+
+	// Layout to use for parsing the time. Defaults to "2006-01-02T15:04".
+	Layout string
 }
 
-// ParseTime parses a datetime in format '2006-01-02T15:04'.
 func (f *FormParser) ParseTime(form url.Values, fieldName string, opts ParseTimeOpts) time.Time {
 	value := form.Get(fieldName)
 	value = strings.TrimSpace(value)
@@ -101,15 +103,20 @@ func (f *FormParser) ParseTime(form url.Values, fieldName string, opts ParseTime
 		return time.Time{}
 	}
 
+	layout := opts.Layout
+	if layout == "" {
+		layout = "2006-01-02T15:04"
+	}
+
 	var (
 		valueParsed time.Time
 		err         error
 	)
 
 	if opts.Location != nil {
-		valueParsed, err = time.ParseInLocation("2006-01-02T15:04", value, opts.Location)
+		valueParsed, err = time.ParseInLocation(layout, value, opts.Location)
 	} else {
-		valueParsed, err = time.Parse("2006-01-02T15:04", value)
+		valueParsed, err = time.Parse(layout, value)
 	}
 
 	if err != nil {
@@ -123,6 +130,36 @@ func (f *FormParser) ParseTime(form url.Values, fieldName string, opts ParseTime
 func (f *FormParser) ParseTimePointer(form url.Values, fieldName string, opts ParseTimeOpts) *time.Time {
 	res := f.ParseTime(form, fieldName, opts)
 	if res.IsZero() {
+		return nil
+	}
+
+	return &res
+}
+
+type ParseDurationOpts struct {
+	Required bool
+}
+
+func (f *FormParser) ParseDuration(form url.Values, fieldName string, opts ParseDurationOpts) time.Duration {
+	value := form.Get(fieldName)
+	value = strings.TrimSpace(value)
+	if opts.Required && value == "" {
+		f.AddFieldError(fieldName, "Must not be empty.")
+		return 0
+	}
+
+	valueParsed, err := time.ParseDuration(value)
+	if err != nil {
+		f.AddFieldError(fieldName, "Invalid duration format.")
+		return 0
+	}
+
+	return valueParsed
+}
+
+func (f *FormParser) ParseDurationPointer(form url.Values, fieldName string, opts ParseDurationOpts) *time.Duration {
+	res := f.ParseDuration(form, fieldName, opts)
+	if res == 0 {
 		return nil
 	}
 

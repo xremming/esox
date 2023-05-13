@@ -15,8 +15,8 @@ import (
 type Event struct {
 	Base
 	Name      string     `dynamodbav:"name"`
-	StartTime time.Time  `dynamodbav:"starts"`
-	EndTime   *time.Time `dynamodbav:"ends"`
+	StartTime time.Time  `dynamodbav:"starts,unixtime"`
+	EndTime   *time.Time `dynamodbav:"ends,unixtime,omitempty"`
 }
 
 type CreateEventIn struct {
@@ -25,6 +25,12 @@ type CreateEventIn struct {
 	Name      string
 	StartTime time.Time
 	EndTime   *time.Time
+}
+
+func (in *CreateEventIn) WithDuration(duration time.Duration) *CreateEventIn {
+	endTime := in.StartTime.Add(duration)
+	in.EndTime = &endTime
+	return in
 }
 
 type CreateEventOut struct {
@@ -36,7 +42,7 @@ func CreateEvent(ctx context.Context, dynamo *dynamodb.Client, in CreateEventIn)
 	ttl := in.StartTime.Add(180 * 24 * time.Hour)
 
 	event := Event{
-		Base:      newBase("event", esox.JoinID("event", id)).withTTL(ttl),
+		Base:      newBaseWithTTL("event", esox.JoinID("event", id), ttl),
 		Name:      in.Name,
 		StartTime: in.StartTime,
 		EndTime:   in.EndTime,

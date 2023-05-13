@@ -14,8 +14,16 @@
   </div>
 
   <div class="form-field">
-    <label for="endTime">End Time</label>
-    <input id="endTime" type="datetime-local" name="endTime" />
+    <label for="duration">Duration*</label>
+    <select id="duration" name="duration">
+      <option value="15m">15 minutes</option>
+      <option value="30m">30 minutes</option>
+      <option value="1h" selected>1 hour</option>
+      <option value="2h">2 hours</option>
+      <option value="3h">3 hours</option>
+      <option value="4h">4 hours</option>
+      <option value="6h">6 hours</option>
+    </select>
   </div>
 
   <input type="submit" value="Create" />

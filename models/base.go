@@ -3,15 +3,15 @@ package models
 import "time"
 
 type Base struct {
-	PartitionKey string `dynamodbav:"pk"`
-	SortKey      string `dynamodbav:"sk"`
-	Created      int64  `dynamodbav:"created"`
-	Updated      int64  `dynamodbav:"updated"`
-	TimeToLive   *int64 `dynamodbav:"ttl"`
+	PartitionKey string     `dynamodbav:"pk"`
+	SortKey      string     `dynamodbav:"sk"`
+	Created      time.Time  `dynamodbav:"created,unixtime"`
+	Updated      time.Time  `dynamodbav:"updated,unixtime"`
+	TimeToLive   *time.Time `dynamodbav:"ttl,unixtime,omitempty"`
 }
 
 func newBase(pk, sk string) Base {
-	now := time.Now().Unix()
+	now := time.Now().UTC()
 	return Base{
 		PartitionKey: pk,
 		SortKey:      sk,
@@ -20,8 +20,8 @@ func newBase(pk, sk string) Base {
 	}
 }
 
-func (b Base) withTTL(ttl time.Time) Base {
-	ttlUnix := ttl.Unix()
-	b.TimeToLive = &ttlUnix
-	return b
+func newBaseWithTTL(pk, sk string, ttl time.Time) Base {
+	out := newBase(pk, sk)
+	out.TimeToLive = &ttl
+	return out
 }

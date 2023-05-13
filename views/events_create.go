@@ -15,7 +15,7 @@ import (
 type CreateEventForm struct {
 	Name      string
 	StartTime time.Time
-	EndTime   *time.Time
+	Duration  time.Duration
 }
 
 func parseCreateEventForm(form url.Values) (CreateEventForm, esox.FormParser) {
@@ -31,8 +31,8 @@ func parseCreateEventForm(form url.Values) (CreateEventForm, esox.FormParser) {
 		Required: true,
 		Location: location,
 	})
-	out.EndTime = formParser.ParseTimePointer(form, "endTime", esox.ParseTimeOpts{
-		Location: location,
+	out.Duration = formParser.ParseDuration(form, "duration", esox.ParseDurationOpts{
+		Required: true,
 	})
 
 	return out, *formParser
@@ -79,12 +79,14 @@ func EventsCreate(cfg aws.Config, tableName string) http.HandlerFunc {
 
 			log.Info().Interface("form", form).Msg("Create event")
 
-			_, err = models.CreateEvent(r.Context(), dynamo, models.CreateEventIn{
+			createEvent := models.CreateEventIn{
 				TableName: tableName,
 				Name:      parsedForm.Name,
 				StartTime: parsedForm.StartTime,
-				EndTime:   parsedForm.EndTime,
-			})
+			}
+			createEvent.WithDuration(parsedForm.Duration)
+
+			_, err = models.CreateEvent(r.Context(), dynamo, createEvent)
 			if err != nil {
 				log.Err(err).Msg("Failed to create event")
 				renderError(w, r, 500, "Failed to create event.")

@@ -1,17 +1,35 @@
 package views
 
 import (
-	"fmt"
 	"net/http"
 	"os"
 
 	"github.com/xremming/abborre/esox"
+	"github.com/xremming/abborre/esox/forms"
 )
 
-var defaultNavItems = []esox.NavItem{
+type navItem struct {
+	Name string
+	URL  string
+}
+
+var defaultNavItems = []navItem{
 	{Name: "Home", URL: "/"},
 	{Name: "Events", URL: "/events"},
 	{Name: "Create Event", URL: "/events/create"},
+}
+
+type data struct {
+	Title       string
+	Description string
+	Flashes     []esox.FlashData
+	Nav         []navItem
+	Form        forms.Form
+	Data        any
+}
+
+func (d *data) SetFlashes(flashes []esox.FlashData) {
+	d.Flashes = flashes
 }
 
 var (
@@ -21,14 +39,15 @@ var (
 
 var errorTmpl = renderer.GetTemplate("error.html")
 
+type renderErrorData struct {
+	StatusCode   int
+	StatusText   string
+	ErrorMessage string
+}
+
 func renderError(w http.ResponseWriter, r *http.Request, statusCode int, errorMessage string) {
-	errorTmpl.ViewData(w, r, fmt.Sprintf("%v: %v", statusCode, errorMessage)).
-		WithNavItems(defaultNavItems).
-		WithDescription(errorMessage).
-		WithData(struct {
-			StatusCode   int
-			StatusText   string
-			ErrorMessage string
-		}{statusCode, http.StatusText(statusCode), errorMessage}).
-		Render(statusCode)
+	errorTmpl.ViewData(w, r).
+		Render(statusCode, &data{
+			Data: renderErrorData{statusCode, http.StatusText(statusCode), errorMessage},
+		})
 }

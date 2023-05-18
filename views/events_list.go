@@ -48,9 +48,7 @@ func EventsList(cfg aws.Config, tableName string) http.HandlerFunc {
 			}
 		}
 
-		eventsListTmpl.ViewData(w, r, "Events").
-			WithNavItems(defaultNavItems).
-			WithData(items).
-			Render(200)
+		eventsListTmpl.ViewData(w, r).
+			Render(200, &data{Nav: defaultNavItems, Data: items})
 	}
 }

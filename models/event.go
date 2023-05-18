@@ -27,12 +27,6 @@ type CreateEventIn struct {
 	EndTime   *time.Time
 }
 
-func (in *CreateEventIn) WithDuration(duration time.Duration) *CreateEventIn {
-	endTime := in.StartTime.Add(duration)
-	in.EndTime = &endTime
-	return in
-}
-
 type CreateEventOut struct {
 	Event Event
 }

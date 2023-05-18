@@ -1,31 +1,29 @@
 {{ define "body" }}
 <form method="post" class="form-control">
+  {{ range .Form.Fields }}
   <div class="form-field">
-    <label for="name">Name*</label>
-    <input id="name" type="text" name="name" />
-    {{ range (.Form.Field "name").Errors }}
+    <label for="{{ .ID }}">{{ .Label }}{{ if .Required }}*{{ end }}</label>
+    {{ if eq .Kind "text" }}
+      <input id="{{ .ID }}" type="text" name="{{ .Name }}" value="{{ .Value }}" />
+    {{ else if eq .Kind "datetime-local" }}
+      <input id="{{ .ID }}" type="datetime-local" name="{{ .Name }}" value="{{ .Value }}" />
+    {{ else if eq .Kind "select" }}
+      <select id="{{ .ID }}" name="{{ .Name }}">
+        {{ range .Options }}
+        <option value="{{ .Value }}"{{ if .Selected }} selected{{ end }}>{{ .Label }}</option>
+        {{ end }}
+      </select>
+    {{ end }}
+
+    {{ range .Errors }}
     <div>{{ . }}</div>
     {{ end }}
   </div>
+  {{ end }}
 
-  <div class="form-field">
-    <label for="startTime">Start Time*</label>
-    <input id="startTime" type="datetime-local" name="startTime" />
-  </div>
-
-  <div class="form-field">
-    <label for="duration">Duration*</label>
-    <select id="duration" name="duration">
-      <option value="15m">15 minutes</option>
-      <option value="30m">30 minutes</option>
-      <option value="1h" selected>1 hour</option>
-      <option value="2h">2 hours</option>
-      <option value="3h">3 hours</option>
-      <option value="4h">4 hours</option>
-      <option value="6h">6 hours</option>
-    </select>
-  </div>
-
+  {{ range .Form.Errors }}
+  <div>{{ . }}</div>
+  {{ end }}
   <input type="submit" value="Create" />
 </form>
 {{ end }}

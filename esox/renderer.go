@@ -19,7 +19,7 @@ type Template struct {
 	template *template.Template
 }
 
-func (t *Template) ViewData(w http.ResponseWriter, r *http.Request, title string) *ViewData {
+func (t *Template) ViewData(w http.ResponseWriter, r *http.Request) *ViewData {
 	var flashes []FlashData
 
 	flashCookieDeleted := false
@@ -43,7 +43,6 @@ func (t *Template) ViewData(w http.ResponseWriter, r *http.Request, title string
 
 		flashCookieDeleted: flashCookieDeleted,
 
-		Title:   title,
 		Flashes: flashes,
 	}
 }

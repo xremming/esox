@@ -1,7 +1,5 @@
 package forms
 
-import "github.com/davecgh/go-spew/spew"
-
 type Form struct {
 	fieldOrdering []string
 	fields        map[string]Field
@@ -48,8 +46,6 @@ func (f *Form) addFieldErrors(name string, errors ...string) {
 }
 
 func (f *Form) HasErrors() bool {
-	spew.Dump(f)
-
 	if len(f.Errors) > 0 {
 		return true
 	}

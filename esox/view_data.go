@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/rs/zerolog/hlog"
+	"github.com/xremming/abborre/esox/flash"
 )
 
 type ViewData struct {
@@ -16,29 +17,6 @@ type ViewData struct {
 	templateName string
 
 	flashCookieDeleted bool
-
-	Flashes []FlashData
-}
-
-func (d *ViewData) Flash(level FlashLevel, message string) *ViewData {
-	d.Flashes = append(d.Flashes, FlashData{level, message})
-	return d
-}
-
-func (d *ViewData) FlashInfo(message string) *ViewData {
-	return d.Flash(FlashLevelInfo, message)
-}
-
-func (d *ViewData) FlashSuccess(message string) *ViewData {
-	return d.Flash(FlashLevelSuccess, message)
-}
-
-func (d *ViewData) FlashWarning(message string) *ViewData {
-	return d.Flash(FlashLevelWarning, message)
-}
-
-func (d *ViewData) FlashError(message string) *ViewData {
-	return d.Flash(FlashLevelError, message)
 }
 
 func (d *ViewData) setFlashCookie(redirect bool) {
@@ -46,11 +24,15 @@ func (d *ViewData) setFlashCookie(redirect bool) {
 		return
 	}
 
+	flashes := flash.FromContext(d.r.Context())
+	if len(flashes) == 0 {
+		return
+	}
+
 	http.SetCookie(d.w, &http.Cookie{
 		Name:     "flash",
-		Value:    encodeFlashCookie(d.Flashes),
+		Value:    flash.Encode(flashes),
 		Path:     "/",
-		HttpOnly: true,
 		SameSite: http.SameSiteStrictMode,
 		Secure:   true,
 	})
@@ -62,7 +44,7 @@ func (d *ViewData) Redirect(url string, code int) {
 }
 
 type RenderData interface {
-	SetFlashes(flashes []FlashData)
+	SetFlashes(flashes []flash.Data)
 }
 
 func (d *ViewData) Render(code int, data RenderData) {
@@ -74,7 +56,8 @@ func (d *ViewData) Render(code int, data RenderData) {
 	buf.Reset()
 	defer bytesBufferPool.Put(buf)
 
-	data.SetFlashes(d.Flashes)
+	flashes := flash.FromRequest(d.r)
+	data.SetFlashes(flashes)
 	log.Info().Interface("data", data).Msg("rendering template")
 	err := d.template.Execute(buf, data)
 	if err != nil {

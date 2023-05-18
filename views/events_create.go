@@ -7,6 +7,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/rs/zerolog/hlog"
+	"github.com/xremming/abborre/esox/flash"
 	"github.com/xremming/abborre/esox/forms"
 	"github.com/xremming/abborre/models"
 )
@@ -54,8 +55,8 @@ func EventsCreate(cfg aws.Config, tableName string) http.HandlerFunc {
 		if r.Method == http.MethodPost {
 			err := r.ParseForm()
 			if err != nil {
-				d.FlashError("Something went wrong, please try again.").
-					Render(400, &data{Nav: defaultNavItems, Form: createEventForm.Empty()})
+				flash.Warning(r, "Something went wrong, please try again.")
+				d.Render(400, &data{Nav: defaultNavItems, Form: createEventForm.Empty()})
 				return
 			}
 
@@ -65,8 +66,8 @@ func EventsCreate(cfg aws.Config, tableName string) http.HandlerFunc {
 					Interface("form", form).
 					Msg("parsed form has errors")
 
-				d.FlashWarning("Failed to create new event.").
-					Render(400, &data{Nav: defaultNavItems, Form: form})
+				flash.Error(r, "Failed to create new event.")
+				d.Render(400, &data{Nav: defaultNavItems, Form: form})
 				return
 			}
 
@@ -87,13 +88,13 @@ func EventsCreate(cfg aws.Config, tableName string) http.HandlerFunc {
 			_, err = models.CreateEvent(r.Context(), dynamo, createEvent)
 			if err != nil {
 				log.Err(err).Msg("Failed to create event")
-				d.FlashError("Failed to create event.").
-					Render(500, &data{Nav: defaultNavItems, Form: form})
+				flash.Error(r, "Failed to create event.")
+				d.Render(500, &data{Nav: defaultNavItems, Form: form})
 				return
 			}
 
-			d.FlashSuccess("Event created.").
-				Redirect("/events", http.StatusFound)
+			flash.Info(r, "Event created.")
+			d.Redirect("/events", http.StatusFound)
 		} else {
 			d.Render(200, &data{Nav: defaultNavItems, Form: createEventForm.Empty()})
 		}

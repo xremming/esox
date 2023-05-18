@@ -8,6 +8,8 @@ import (
 	"path/filepath"
 	"sync"
 	"time"
+
+	"github.com/xremming/abborre/esox/flash"
 )
 
 var bytesBufferPool = sync.Pool{New: func() interface{} {
@@ -20,13 +22,12 @@ type Template struct {
 }
 
 func (t *Template) ViewData(w http.ResponseWriter, r *http.Request) *ViewData {
-	var flashes []FlashData
-
 	flashCookieDeleted := false
 	cookie, err := r.Cookie("flash")
 	if err == nil {
 		flashCookieDeleted = true
-		flashes = decodeFlashCookie(cookie.Value)
+		flashes := flash.Decode(cookie.Value)
+		r = r.WithContext(flash.NewContext(r.Context(), flashes))
 		http.SetCookie(w, &http.Cookie{
 			Name:    "flash",
 			MaxAge:  -1,
@@ -42,8 +43,6 @@ func (t *Template) ViewData(w http.ResponseWriter, r *http.Request) *ViewData {
 		templateName: t.name,
 
 		flashCookieDeleted: flashCookieDeleted,
-
-		Flashes: flashes,
 	}
 }
 

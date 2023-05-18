@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/xremming/abborre/esox"
+	"github.com/xremming/abborre/esox/flash"
 	"github.com/xremming/abborre/esox/forms"
 )
 
@@ -22,13 +23,13 @@ var defaultNavItems = []navItem{
 type data struct {
 	Title       string
 	Description string
-	Flashes     []esox.FlashData
+	Flashes     []flash.Data
 	Nav         []navItem
 	Form        forms.Form
 	Data        any
 }
 
-func (d *data) SetFlashes(flashes []esox.FlashData) {
+func (d *data) SetFlashes(flashes []flash.Data) {
 	d.Flashes = flashes
 }
 

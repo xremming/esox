@@ -11,7 +11,7 @@ import (
 	"github.com/xremming/abborre/models"
 )
 
-var eventsListTmpl = renderer2.GetTemplate("events_list.html", "base.html")
+var eventsListTmpl = renderer.GetTemplate("events_list.html", "base.html")
 
 func EventsList(cfg aws.Config, tableName string) http.HandlerFunc {
 	dynamo := dynamodb.NewFromConfig(cfg)

@@ -3,6 +3,7 @@ package views
 import (
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/xremming/abborre/esox"
 	"github.com/xremming/abborre/esox/flash"
@@ -20,6 +21,16 @@ var defaultNavItems = []navItem{
 	{Name: "Create Event", URL: "/events/create"},
 }
 
+var location *time.Location
+
+func init() {
+	var err error
+	location, err = time.LoadLocation("Europe/Helsinki")
+	if err != nil {
+		panic(err)
+	}
+}
+
 type data struct {
 	Title       string
 	Description string
@@ -35,10 +46,10 @@ func (d *data) SetFlashes(flashes []flash.Data) {
 
 var (
 	templates = os.DirFS(".")
-	renderer2 = esox.NewR(templates, "templates")
+	renderer  = esox.NewR(templates, "templates")
 )
 
-var errorTmpl = renderer2.GetTemplate("error.html", "base.html")
+var errorTmpl = renderer.GetTemplate("error.html", "base.html")
 
 type renderErrorData struct {
 	StatusCode   int

@@ -4,7 +4,7 @@ import (
 	"net/http"
 )
 
-var homeTmpl = renderer2.GetTemplate("home.html", "base.html")
+var homeTmpl = renderer.GetTemplate("home.html", "base.html")
 
 func Home() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {

@@ -4,7 +4,7 @@ import (
 	"net/http"
 )
 
-var notFoundTmpl = renderer2.GetTemplate("404.html", "base.html")
+var notFoundTmpl = renderer.GetTemplate("404.html", "base.html")
 
 func NotFound() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {

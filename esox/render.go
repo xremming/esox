@@ -13,21 +13,13 @@ import (
 	"github.com/xremming/abborre/esox/flash"
 )
 
-type R struct {
+type Renderer struct {
 	fs     fs.FS
 	prefix string
-	// tmpl *template.Template
 }
 
-func NewR(fs fs.FS, prefix string) *R {
-	return &R{fs, prefix}
-	// tmpl, err := template.ParseFS(filesystem, filepath.Join(prefix, "*.html"))
-
-	// if err != nil {
-	// 	panic(err)
-	// }
-
-	// return &R{tmpl}
+func NewR(fs fs.FS, prefix string) *Renderer {
+	return &Renderer{fs, prefix}
 }
 
 type Page struct {
@@ -35,7 +27,7 @@ type Page struct {
 	name string
 }
 
-func (re *R) GetTemplate(name, baseName string) *Page {
+func (re *Renderer) GetTemplate(name, baseName string) *Page {
 	baseFile, err := re.fs.Open(filepath.Join(re.prefix, baseName))
 	if err != nil {
 		panic(err)

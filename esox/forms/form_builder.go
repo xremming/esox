@@ -79,6 +79,14 @@ func (f FormBuilder) Parse(form url.Values) (Form, map[string]any) {
 		case KindText:
 			c := field.Config.(TextConfig)
 
+			if c.MinLength > 0 && len(value) < c.MinLength {
+				out.addFieldErrors(name, fmt.Sprintf("Must be at least %d characters.", c.MinLength))
+			}
+
+			if c.MaxLength > 0 && len(value) > c.MaxLength {
+				out.addFieldErrors(name, fmt.Sprintf("Must be at most %d characters.", c.MaxLength))
+			}
+
 			if c.Parse == nil {
 				data[name] = value
 			} else {
@@ -90,6 +98,14 @@ func (f FormBuilder) Parse(form url.Values) (Form, map[string]any) {
 		case KindPassword:
 			c := field.Config.(PasswordConfig)
 
+			if c.MinLength > 0 && len(value) < c.MinLength {
+				out.addFieldErrors(name, fmt.Sprintf("Must be at least %d characters.", c.MinLength))
+			}
+
+			if c.MaxLength > 0 && len(value) > c.MaxLength {
+				out.addFieldErrors(name, fmt.Sprintf("Must be at most %d characters.", c.MaxLength))
+			}
+
 			if c.Parse == nil {
 				data[name] = value
 			} else {
@@ -100,7 +116,7 @@ func (f FormBuilder) Parse(form url.Values) (Form, map[string]any) {
 
 		case KindHidden:
 			c := field.Config.(HiddenConfig)
-			field.Value = c.Value
+			out.setFieldValue(name, c.Value)
 
 			if c.Parse == nil {
 				data[name] = value

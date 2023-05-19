@@ -13,7 +13,7 @@ import (
 	"github.com/xremming/abborre/models"
 )
 
-var eventsCreateTmpl = renderer2.GetTemplate("events_create.html", "base.html")
+var eventsCreateTmpl = renderer.GetTemplate("events_create.html", "base.html")
 
 func EventsCreate(cfg aws.Config, tableName string) http.HandlerFunc {
 	dynamo := dynamodb.NewFromConfig(cfg)
@@ -27,7 +27,7 @@ func EventsCreate(cfg aws.Config, tableName string) http.HandlerFunc {
 		Field("startTime", forms.FieldBuilder[forms.DateTimeLocalConfig]{
 			Label:    "Start Time",
 			Required: true,
-			Config:   forms.DateTimeLocalConfig{},
+			Config:   forms.DateTimeLocalConfig{Location: location},
 		}).
 		Field("duration", forms.FieldBuilder[forms.SelectConfig]{
 			Label:    "Duration",

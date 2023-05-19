@@ -14,7 +14,7 @@ import (
 	"github.com/xremming/abborre/models"
 )
 
-var eventsUpdateTmpl = renderer2.GetTemplate("events_update.html", "base.html")
+var eventsUpdateTmpl = renderer.GetTemplate("events_update.html", "base.html")
 
 func EventsUpdate(cfg aws.Config, tableName string) http.HandlerFunc {
 	dynamo := dynamodb.NewFromConfig(cfg)
@@ -25,8 +25,10 @@ func EventsUpdate(cfg aws.Config, tableName string) http.HandlerFunc {
 			Config: forms.TextConfig{MinLength: 3, MaxLength: 256},
 		}).
 		Field("startTime", forms.FieldBuilder[forms.DateTimeLocalConfig]{
-			Label:  "Start Time",
-			Config: forms.DateTimeLocalConfig{},
+			Label: "Start Time",
+			Config: forms.DateTimeLocalConfig{
+				Location: location,
+			},
 		}).
 		Done()
 

@@ -2,6 +2,7 @@ package forms
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/url"
 	"strings"
@@ -9,6 +10,7 @@ import (
 	_ "time/tzdata"
 
 	"github.com/rs/zerolog/log"
+	"github.com/xremming/abborre/esox/csrf"
 )
 
 type FormBuilder struct {
@@ -32,6 +34,14 @@ func (f FormBuilder) Field(name string, fieldBuilder FieldConfigBuilder) FormBui
 		panic("FormBuilder cannot be modified after being marked as done.")
 	}
 
+	if name == "" {
+		panic("Field name cannot be empty.")
+	}
+
+	if name == "_csrf" {
+		panic("Field name cannot be _csrf.")
+	}
+
 	field := fieldBuilder.Build(name)
 	f.fieldOrdering = append(f.fieldOrdering, field.Name)
 	f.fields[field.Name] = field
@@ -43,12 +53,28 @@ func (f FormBuilder) Done() FormBuilder {
 	return f
 }
 
-func (f FormBuilder) Empty() Form {
+func (f FormBuilder) Empty(ctx context.Context) Form {
 	if !f.done {
 		panic("FormBuilder must be marked as done before parsing.")
 	}
 
-	return Form{f.fieldOrdering, f.fields, nil}
+	out := Form{f.fieldOrdering, make(map[string]Field, len(f.fields)), nil}
+
+	csrfStruct := csrf.FromContext(ctx)
+	if csrfStruct != nil {
+		out.fieldOrdering = append(out.fieldOrdering, "_csrf")
+		out.fields["_csrf"] = Field{
+			Name:  "_csrf",
+			Kind:  KindHidden,
+			Value: csrfStruct.Generate(),
+		}
+	}
+
+	for name, field := range f.fields {
+		out.fields[name] = field
+	}
+
+	return out
 }
 
 func lengthErrors(minLength, maxLength int, required bool, value string) []string {
@@ -81,6 +107,20 @@ func (f FormBuilder) Parse(ctx context.Context, form url.Values) (Form, map[stri
 
 	if form == nil {
 		return out, data
+	}
+
+	csrfStruct := csrf.FromContext(ctx)
+	if csrfStruct != nil {
+		err := csrfStruct.Validate(ctx, form.Get("_csrf"))
+		if err != nil {
+			logger.Err(err).Msg("CSRF token validation failed.")
+
+			if errors.Is(err, csrf.ErrTokenExpired) {
+				out.Errors = append(out.Errors, "Form has expired, please retry.")
+			} else {
+				out.Errors = append(out.Errors, "Could not validate form, please retry.")
+			}
+		}
 	}
 
 	for name, field := range f.fields {

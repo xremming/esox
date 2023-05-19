@@ -60,7 +60,7 @@ func EventsCreate(cfg aws.Config, tableName string) http.HandlerFunc {
 			err := r.ParseForm()
 			if err != nil {
 				flash.Warning(r, "Something went wrong, please try again.")
-				eventsCreateTmpl.Render(w, r, 400, &data{Nav: defaultNavItems, Form: createEventForm.Empty()})
+				eventsCreateTmpl.Render(w, r, 400, &data{Nav: defaultNavItems, Form: createEventForm.Empty(r.Context())})
 				return
 			}
 
@@ -100,7 +100,7 @@ func EventsCreate(cfg aws.Config, tableName string) http.HandlerFunc {
 			flash.Info(r, "Event created.")
 			esox.Redirect(w, r, "/events", http.StatusFound)
 		} else {
-			eventsCreateTmpl.Render(w, r, 200, &data{Nav: defaultNavItems, Form: createEventForm.Empty()})
+			eventsCreateTmpl.Render(w, r, 200, &data{Nav: defaultNavItems, Form: createEventForm.Empty(r.Context())})
 		}
 	}
 }

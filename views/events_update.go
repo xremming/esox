@@ -45,7 +45,7 @@ func EventsUpdate(cfg aws.Config, tableName string) http.HandlerFunc {
 			err := r.ParseForm()
 			if err != nil {
 				flash.Warning(r, "Something went wrong, please try again.")
-				eventsUpdateTmpl.Render(w, r, 400, &data{Nav: defaultNavItems, Form: updateEventForm.Empty()})
+				eventsUpdateTmpl.Render(w, r, 400, &data{Nav: defaultNavItems, Form: updateEventForm.Empty(r.Context())})
 				return
 			}
 
@@ -84,7 +84,7 @@ func EventsUpdate(cfg aws.Config, tableName string) http.HandlerFunc {
 		eventOut, err := models.GetEvent(r.Context(), dynamo, models.GetEventIn{TableName: tableName, ID: id})
 		if err != nil {
 			flash.Warning(r, "Something went wrong, please try again.")
-			eventsUpdateTmpl.Render(w, r, 400, &data{Nav: defaultNavItems, Form: updateEventForm.Empty()})
+			eventsUpdateTmpl.Render(w, r, 400, &data{Nav: defaultNavItems, Form: updateEventForm.Empty(r.Context())})
 			return
 		}
 

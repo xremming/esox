@@ -111,6 +111,7 @@ func (p *Page) Render(w http.ResponseWriter, r *http.Request, code int, data Ren
 	log := hlog.FromRequest(r).With().
 		Int("code", code).
 		Str("template", p.name).
+		Interface("data", data).
 		Logger()
 
 	buf := utils.GetBytesBuffer()

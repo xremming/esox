@@ -4,11 +4,10 @@ import (
 	"net/http"
 )
 
-var notFoundTmpl = renderer.GetTemplate("404.html")
+var notFoundTmpl = renderer2.GetTemplate("404.html", "base.html")
 
 func NotFound() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		notFoundTmpl.ViewData(w, r).
-			Render(404, &data{Title: "Not Found", Nav: defaultNavItems})
+		notFoundTmpl.Render(w, r, 404, &data{Title: "Not Found", Nav: defaultNavItems})
 	}
 }

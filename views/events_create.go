@@ -7,12 +7,13 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/rs/zerolog/hlog"
+	"github.com/xremming/abborre/esox"
 	"github.com/xremming/abborre/esox/flash"
 	"github.com/xremming/abborre/esox/forms"
 	"github.com/xremming/abborre/models"
 )
 
-var eventsCreateTmpl = renderer.GetTemplate("events_create.html")
+var eventsCreateTmpl = renderer2.GetTemplate("events_create.html", "base.html")
 
 func EventsCreate(cfg aws.Config, tableName string) http.HandlerFunc {
 	dynamo := dynamodb.NewFromConfig(cfg)
@@ -50,13 +51,11 @@ func EventsCreate(cfg aws.Config, tableName string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		log := hlog.FromRequest(r)
 
-		d := eventsCreateTmpl.ViewData(w, r)
-
 		if r.Method == http.MethodPost {
 			err := r.ParseForm()
 			if err != nil {
 				flash.Warning(r, "Something went wrong, please try again.")
-				d.Render(400, &data{Nav: defaultNavItems, Form: createEventForm.Empty()})
+				eventsCreateTmpl.Render(w, r, 400, &data{Nav: defaultNavItems, Form: createEventForm.Empty()})
 				return
 			}
 
@@ -67,7 +66,7 @@ func EventsCreate(cfg aws.Config, tableName string) http.HandlerFunc {
 					Msg("parsed form has errors")
 
 				flash.Error(r, "Failed to create new event.")
-				d.Render(400, &data{Nav: defaultNavItems, Form: form})
+				eventsCreateTmpl.Render(w, r, 400, &data{Nav: defaultNavItems, Form: form})
 				return
 			}
 
@@ -89,14 +88,14 @@ func EventsCreate(cfg aws.Config, tableName string) http.HandlerFunc {
 			if err != nil {
 				log.Err(err).Msg("Failed to create event")
 				flash.Error(r, "Failed to create event.")
-				d.Render(500, &data{Nav: defaultNavItems, Form: form})
+				eventsCreateTmpl.Render(w, r, 500, &data{Nav: defaultNavItems, Form: form})
 				return
 			}
 
 			flash.Info(r, "Event created.")
-			d.Redirect("/events", http.StatusFound)
+			esox.Redirect(w, r, "/events", http.StatusFound)
 		} else {
-			d.Render(200, &data{Nav: defaultNavItems, Form: createEventForm.Empty()})
+			eventsCreateTmpl.Render(w, r, 200, &data{Nav: defaultNavItems, Form: createEventForm.Empty()})
 		}
 	}
 }

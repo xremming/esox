@@ -35,10 +35,10 @@ func (d *data) SetFlashes(flashes []flash.Data) {
 
 var (
 	templates = os.DirFS(".")
-	renderer  = esox.NewRenderer(templates, "templates", "base.html")
+	renderer2 = esox.NewR(templates, "templates")
 )
 
-var errorTmpl = renderer.GetTemplate("error.html")
+var errorTmpl = renderer2.GetTemplate("error.html", "base.html")
 
 type renderErrorData struct {
 	StatusCode   int
@@ -47,8 +47,7 @@ type renderErrorData struct {
 }
 
 func renderError(w http.ResponseWriter, r *http.Request, statusCode int, errorMessage string) {
-	errorTmpl.ViewData(w, r).
-		Render(statusCode, &data{
-			Data: renderErrorData{statusCode, http.StatusText(statusCode), errorMessage},
-		})
+	errorTmpl.Render(w, r, statusCode, &data{
+		Data: renderErrorData{statusCode, http.StatusText(statusCode), errorMessage},
+	})
 }

@@ -7,7 +7,7 @@ import (
 	"unicode"
 )
 
-const datetimeLocalFormat = "2006-01-02T15:04"
+const FormatDatetimeLocal = "2006-01-02T15:04"
 
 func removeWhitespace(s string) string {
 	var b strings.Builder

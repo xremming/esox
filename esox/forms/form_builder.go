@@ -97,7 +97,16 @@ func lengthErrors(minLength, maxLength int, required bool, value string) []strin
 	return out
 }
 
+func (f FormBuilder) Prefilled(ctx context.Context, form url.Values) Form {
+	out, _ := f.parse(ctx, form, true)
+	return out
+}
+
 func (f FormBuilder) Parse(ctx context.Context, form url.Values) (Form, map[string]any) {
+	return f.parse(ctx, form, false)
+}
+
+func (f FormBuilder) parse(ctx context.Context, form url.Values, prefilling bool) (Form, map[string]any) {
 	if !f.done {
 		panic("FormBuilder must be marked as done before parsing.")
 	}
@@ -113,14 +122,23 @@ func (f FormBuilder) Parse(ctx context.Context, form url.Values) (Form, map[stri
 
 	csrfStruct := csrf.FromContext(ctx)
 	if csrfStruct != nil {
-		err := csrfStruct.Validate(ctx, form.Get("_csrf"))
-		if err != nil {
-			log.Err(err).Msg("CSRF token validation failed.")
+		out.fieldOrdering = append(out.fieldOrdering, "_csrf")
+		out.fields["_csrf"] = Field{
+			Name:  "_csrf",
+			Kind:  KindHidden,
+			Value: csrfStruct.Generate(),
+		}
 
-			if errors.Is(err, csrf.ErrTokenExpired) {
-				out.Errors = append(out.Errors, "Form has expired, please retry.")
-			} else {
-				out.Errors = append(out.Errors, "Could not validate form, please retry.")
+		if !prefilling {
+			err := csrfStruct.Validate(ctx, form.Get("_csrf"))
+			if err != nil {
+				log.Err(err).Msg("CSRF token validation failed.")
+
+				if errors.Is(err, csrf.ErrTokenExpired) {
+					out.Errors = append(out.Errors, "Form has expired, please retry.")
+				} else {
+					out.Errors = append(out.Errors, "Could not validate form, please retry.")
+				}
 			}
 		}
 	}
@@ -186,14 +204,14 @@ func (f FormBuilder) Parse(ctx context.Context, form url.Values) (Form, map[stri
 			)
 
 			if c.Location == "" {
-				v, err = time.Parse(datetimeLocalFormat, value)
+				v, err = time.Parse(FormatDatetimeLocal, value)
 			} else {
 				location, errLocation := time.LoadLocation(c.Location)
 				if errLocation != nil {
 					log.Err(errLocation).Str("location", c.Location).Msg("invalid location")
 					field.Errors = append(field.Errors, "Invalid location.")
 				} else {
-					v, err = time.ParseInLocation(datetimeLocalFormat, value, location)
+					v, err = time.ParseInLocation(FormatDatetimeLocal, value, location)
 				}
 			}
 
@@ -201,11 +219,11 @@ func (f FormBuilder) Parse(ctx context.Context, form url.Values) (Form, map[stri
 				field.Errors = append(field.Errors, "Invalid date/time format.")
 			} else {
 				if !c.Min.IsZero() && v.Before(c.Min) {
-					field.Errors = append(field.Errors, "Date/time must not be before "+c.Min.Format(datetimeLocalFormat)+".")
+					field.Errors = append(field.Errors, "Date/time must not be before "+c.Min.Format(FormatDatetimeLocal)+".")
 				}
 
 				if !c.Max.IsZero() && v.After(c.Max) {
-					field.Errors = append(field.Errors, "Date/time must not be after "+c.Max.Format(datetimeLocalFormat)+".")
+					field.Errors = append(field.Errors, "Date/time must not be after "+c.Max.Format(FormatDatetimeLocal)+".")
 				}
 			}
 

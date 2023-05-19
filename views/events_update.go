@@ -88,9 +88,9 @@ func EventsUpdate(cfg aws.Config, tableName string) http.HandlerFunc {
 			return
 		}
 
-		form, _ := updateEventForm.Parse(r.Context(), url.Values{
+		form := updateEventForm.Prefilled(r.Context(), url.Values{
 			"name":      {eventOut.Event.Name},
-			"startTime": {eventOut.Event.StartTime.Format("2006-01-02T15:04")},
+			"startTime": {eventOut.Event.StartTime.Format(forms.FormatDatetimeLocal)},
 		})
 
 		eventsUpdateTmpl.Render(w, r, 200, &data{Nav: defaultNavItems, Form: form})

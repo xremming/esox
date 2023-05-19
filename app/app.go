@@ -90,6 +90,7 @@ func NewHandler(ctx context.Context, conf Configuration) *http.ServeMux {
 	c := setupMiddleware(*log)
 	mux := http.ServeMux{}
 	mux.Handle("/static/", c.Then(views.Static()))
+	mux.Handle("/events/calendar", c.Then(views.EventsListICS(cfg, conf.TableName)))
 	mux.Handle("/events/create", c.Then(views.EventsCreate(cfg, conf.TableName)))
 	mux.Handle("/events/update", c.Then(views.EventsUpdate(cfg, conf.TableName)))
 	mux.Handle("/events", c.Then(views.EventsList(cfg, conf.TableName)))

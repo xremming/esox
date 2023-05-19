@@ -17,6 +17,7 @@ require (
 )
 
 require (
+	github.com/arran4/golang-ical v0.0.0-20230425234049-f69e132f2b0c // indirect
 	github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.13.3 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/configsources v1.1.33 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.4.27 // indirect

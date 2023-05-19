@@ -1,0 +1,52 @@
+package views
+
+import (
+	"net/http"
+
+	ics "github.com/arran4/golang-ical"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
+	"github.com/rs/zerolog/log"
+	"github.com/xremming/abborre/models"
+)
+
+func EventsListICS(cfg aws.Config, tableName string) http.HandlerFunc {
+	dynamo := dynamodb.NewFromConfig(cfg)
+
+	return func(w http.ResponseWriter, r *http.Request) {
+		logger := log.Ctx(r.Context())
+
+		resp, err := models.ListEvents(r.Context(), dynamo, models.ListEventsIn{TableName: tableName})
+		if err != nil {
+			renderError(w, r, 500, "Failed to list events.")
+			return
+		}
+
+		cal := ics.NewCalendar()
+		for _, event := range resp.Events {
+			ev := cal.AddEvent(event.ID().String())
+			ev.SetClass(ics.ClassificationPublic)
+
+			ev.SetCreatedTime(event.Created)
+			ev.SetModifiedAt(event.Updated)
+
+			ev.SetDtStampTime(event.StartTime)
+			ev.SetStartAt(event.StartTime)
+			if event.EndTime != nil {
+				ev.SetEndAt(*event.EndTime)
+			}
+
+			ev.SetSummary(event.Name)
+			// ev.SetDescription(event.Description)
+			ev.SetURL("localhost:8080/events/" + event.ID().String())
+		}
+
+		w.Header().Set("Content-Type", "text/calendar")
+		w.Header().Set("Content-Disposition", "attachment; filename=events.ics")
+
+		err = cal.SerializeTo(w)
+		if err != nil {
+			logger.Err(err).Msg("Failed to serialize calendar")
+		}
+	}
+}

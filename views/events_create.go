@@ -31,7 +31,7 @@ func EventsCreate(cfg aws.Config, tableName string) http.HandlerFunc {
 		Field("startTime", forms.FieldBuilder[forms.DateTimeLocalConfig]{
 			Label:    "Start Time",
 			Required: true,
-			Config:   forms.DateTimeLocalConfig{Location: location},
+			Config:   forms.DateTimeLocalConfig{Location: "Europe/Helsinki"},
 		}).
 		Field("duration", forms.FieldBuilder[forms.SelectConfig]{
 			Label:    "Duration",
@@ -64,7 +64,7 @@ func EventsCreate(cfg aws.Config, tableName string) http.HandlerFunc {
 				return
 			}
 
-			form, parsedForm := createEventForm.Parse(r.Form)
+			form, parsedForm := createEventForm.Parse(r.Context(), r.Form)
 			if form.HasErrors() {
 				log.Info().
 					Interface("form", form).

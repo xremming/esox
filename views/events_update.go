@@ -28,7 +28,7 @@ func EventsUpdate(cfg aws.Config, tableName string) http.HandlerFunc {
 		Field("startTime", forms.FieldBuilder[forms.DateTimeLocalConfig]{
 			Label: "Start Time",
 			Config: forms.DateTimeLocalConfig{
-				Location: location,
+				Location: "Europe/Helsinki",
 			},
 		}).
 		Done()
@@ -49,7 +49,7 @@ func EventsUpdate(cfg aws.Config, tableName string) http.HandlerFunc {
 				return
 			}
 
-			form, parsedForm := updateEventForm.Parse(r.Form)
+			form, parsedForm := updateEventForm.Parse(r.Context(), r.Form)
 			if form.HasErrors() {
 				eventsUpdateTmpl.Render(w, r, 400, &data{Nav: defaultNavItems, Form: form})
 				return
@@ -88,7 +88,7 @@ func EventsUpdate(cfg aws.Config, tableName string) http.HandlerFunc {
 			return
 		}
 
-		form, _ := updateEventForm.Parse(url.Values{
+		form, _ := updateEventForm.Parse(r.Context(), url.Values{
 			"name":      {eventOut.Event.Name},
 			"startTime": {eventOut.Event.StartTime.Format("2006-01-02T15:04")},
 		})

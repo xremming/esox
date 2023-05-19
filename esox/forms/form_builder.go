@@ -1,10 +1,14 @@
 package forms
 
 import (
+	"context"
 	"fmt"
 	"net/url"
 	"strings"
 	"time"
+	_ "time/tzdata"
+
+	"github.com/rs/zerolog/log"
 )
 
 type FormBuilder struct {
@@ -65,10 +69,12 @@ func lengthErrors(minLength, maxLength int, required bool, value string) []strin
 	return out
 }
 
-func (f FormBuilder) Parse(form url.Values) (Form, map[string]any) {
+func (f FormBuilder) Parse(ctx context.Context, form url.Values) (Form, map[string]any) {
 	if !f.done {
 		panic("FormBuilder must be marked as done before parsing.")
 	}
+
+	logger := log.Ctx(ctx).With().Interface("form", form).Logger()
 
 	out := Form{f.fieldOrdering, make(map[string]Field, len(f.fields)), nil}
 	data := make(map[string]any)
@@ -137,22 +143,28 @@ func (f FormBuilder) Parse(form url.Values) (Form, map[string]any) {
 				err error
 			)
 
-			if c.Location == nil {
+			if c.Location == "" {
 				v, err = time.Parse(datetimeLocalFormat, value)
 			} else {
-				v, err = time.ParseInLocation(datetimeLocalFormat, value, c.Location)
+				location, errLocation := time.LoadLocation(c.Location)
+				if errLocation != nil {
+					logger.Err(errLocation).Str("location", c.Location).Msg("invalid location")
+					field.Errors = append(field.Errors, "Invalid location.")
+				} else {
+					v, err = time.ParseInLocation(datetimeLocalFormat, value, location)
+				}
 			}
 
 			if err != nil {
 				field.Errors = append(field.Errors, "Invalid date/time format.")
-			}
+			} else {
+				if !c.Min.IsZero() && v.Before(c.Min) {
+					field.Errors = append(field.Errors, "Date/time must not be before "+c.Min.Format(datetimeLocalFormat)+".")
+				}
 
-			if !c.Min.IsZero() && v.Before(c.Min) {
-				field.Errors = append(field.Errors, "Date/time must not be before "+c.Min.Format(datetimeLocalFormat)+".")
-			}
-
-			if !c.Max.IsZero() && v.After(c.Max) {
-				field.Errors = append(field.Errors, "Date/time must not be after "+c.Max.Format(datetimeLocalFormat)+".")
+				if !c.Max.IsZero() && v.After(c.Max) {
+					field.Errors = append(field.Errors, "Date/time must not be after "+c.Max.Format(datetimeLocalFormat)+".")
+				}
 			}
 
 			data[name] = v

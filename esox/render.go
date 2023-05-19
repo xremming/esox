@@ -18,7 +18,7 @@ type Renderer struct {
 	prefix string
 }
 
-func NewR(fs fs.FS, prefix string) *Renderer {
+func NewRenderer(fs fs.FS, prefix string) *Renderer {
 	return &Renderer{fs, prefix}
 }
 

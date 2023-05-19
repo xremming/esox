@@ -27,6 +27,11 @@
   border: 1px solid black;
 }
 
+.form-field textarea {
+  resize: vertical;
+  min-height: 5rem;
+}
+
 .form-field input:focus,
 .form-field select:focus,
 .form-field textarea:focus {

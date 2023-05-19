@@ -24,6 +24,10 @@ func EventsCreate(cfg aws.Config, tableName string) http.HandlerFunc {
 			Required: true,
 			Config:   forms.TextConfig{MinLength: 3, MaxLength: 256},
 		}).
+		Field("description", forms.FieldBuilder[forms.TextConfig]{
+			Label:  "Description",
+			Config: forms.TextConfig{Multiline: true, MinLength: 3},
+		}).
 		Field("startTime", forms.FieldBuilder[forms.DateTimeLocalConfig]{
 			Label:    "Start Time",
 			Required: true,

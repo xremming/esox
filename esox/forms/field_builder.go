@@ -19,7 +19,7 @@ type ParseFunc func(string) (any, []string)
 
 type TextConfig struct {
 	Parse     ParseFunc
-	MultiLine bool
+	Multiline bool
 
 	Pattern   string
 	MinLength int

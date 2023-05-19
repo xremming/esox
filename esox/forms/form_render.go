@@ -7,16 +7,17 @@ import (
 )
 
 var divTemplate = `
-{{ $fieldClass := .FieldClass }}
-{{ $errorClass := .ErrorClass }}
-
 {{ range .Form.Fields }}
-<div class="{{ $fieldClass }}">
+<div class="{{ $.FieldClass }}">
 
   <label for="{{ .ID }}">{{ .Label }}{{ if .Required }}*{{ end }}</label>
 
   {{ if eq .Kind "text" }}
-  <input id="{{ .ID }}" type="text" name="{{ .Name }}" value="{{ .Value }}" />
+    {{ if .Config.Multiline }}
+    <textarea id="{{ .ID }}" name="{{ .Name }}">{{ .Value }}</textarea>
+    {{ else }}
+    <input id="{{ .ID }}" type="text" name="{{ .Name }}" value="{{ .Value }}" />
+    {{ end }}
   {{ else if eq .Kind "datetime-local" }}
   <input id="{{ .ID }}" type="datetime-local" name="{{ .Name }}" value="{{ .Value }}" />
   {{ else if eq .Kind "select" }}
@@ -28,14 +29,14 @@ var divTemplate = `
   {{ end }}
 
   {{ range .Errors }}
-  <div class="{{ $errorClass }}">{{ . }}</div>
+  <div class="{{ $.ErrorClass }}">{{ . }}</div>
   {{ end }}
 
   </div>
 {{ end }}
 
 {{ range .Form.Errors }}
-<div class="{{ $errorClass }}">{{ . }}</div>
+<div class="{{ $.ErrorClass }}">{{ . }}</div>
 {{ end }}
 `
 

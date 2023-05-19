@@ -47,16 +47,30 @@ func (f FormBuilder) Empty() Form {
 	return Form{f.fieldOrdering, f.fields, nil}
 }
 
+func lengthErrors(minLength, maxLength int, required bool, value string) []string {
+	var out []string
+
+	if len(value) == 0 && !required {
+		return out
+	}
+
+	if minLength > 0 && len(value) < minLength {
+		out = append(out, fmt.Sprintf("Must be at least %d characters.", minLength))
+	}
+
+	if maxLength > 0 && len(value) > maxLength {
+		out = append(out, fmt.Sprintf("Must be at most %d characters.", maxLength))
+	}
+
+	return out
+}
+
 func (f FormBuilder) Parse(form url.Values) (Form, map[string]any) {
 	if !f.done {
 		panic("FormBuilder must be marked as done before parsing.")
 	}
 
 	out := Form{f.fieldOrdering, make(map[string]Field, len(f.fields)), nil}
-	for name, field := range f.fields {
-		out.fields[name] = field
-	}
-
 	data := make(map[string]any)
 
 	if form == nil {
@@ -70,59 +84,49 @@ func (f FormBuilder) Parse(form url.Values) (Form, map[string]any) {
 		}
 
 		if field.Required && value == "" {
-			out.addFieldErrors(name, "This field is required.")
+			field.Errors = append(field.Errors, "This field is required.")
 		}
 
-		out.setFieldValue(name, value)
+		field.Value = value
 
 		switch field.Kind {
 		case KindText:
 			c := field.Config.(TextConfig)
 
-			if c.MinLength > 0 && len(value) < c.MinLength {
-				out.addFieldErrors(name, fmt.Sprintf("Must be at least %d characters.", c.MinLength))
-			}
-
-			if c.MaxLength > 0 && len(value) > c.MaxLength {
-				out.addFieldErrors(name, fmt.Sprintf("Must be at most %d characters.", c.MaxLength))
-			}
+			field.Errors = append(field.Errors, lengthErrors(c.MinLength, c.MaxLength, field.Required, value)...)
 
 			if c.Parse == nil {
 				data[name] = value
 			} else {
 				v, err := c.Parse(value)
-				out.addFieldErrors(name, err...)
+				field.Errors = append(field.Errors, err...)
 				data[name] = v
 			}
 
 		case KindPassword:
 			c := field.Config.(PasswordConfig)
 
-			if c.MinLength > 0 && len(value) < c.MinLength {
-				out.addFieldErrors(name, fmt.Sprintf("Must be at least %d characters.", c.MinLength))
-			}
-
-			if c.MaxLength > 0 && len(value) > c.MaxLength {
-				out.addFieldErrors(name, fmt.Sprintf("Must be at most %d characters.", c.MaxLength))
-			}
+			field.Errors = append(field.Errors, lengthErrors(c.MinLength, c.MaxLength, field.Required, value)...)
 
 			if c.Parse == nil {
 				data[name] = value
 			} else {
 				v, err := c.Parse(value)
-				out.addFieldErrors(name, err...)
+				field.Errors = append(field.Errors, err...)
 				data[name] = v
 			}
 
 		case KindHidden:
 			c := field.Config.(HiddenConfig)
-			out.setFieldValue(name, c.Value)
+			if c.Value != "" {
+				field.Value = c.Value
+			}
 
 			if c.Parse == nil {
 				data[name] = value
 			} else {
 				v, err := c.Parse(value)
-				out.addFieldErrors(name, err...)
+				field.Errors = append(field.Errors, err...)
 				data[name] = v
 			}
 
@@ -140,15 +144,15 @@ func (f FormBuilder) Parse(form url.Values) (Form, map[string]any) {
 			}
 
 			if err != nil {
-				out.addFieldErrors(name, "Invalid date/time format.")
+				field.Errors = append(field.Errors, "Invalid date/time format.")
 			}
 
 			if !c.Min.IsZero() && v.Before(c.Min) {
-				out.addFieldErrors(name, "Date/time must not be before "+c.Min.Format(datetimeLocalFormat)+".")
+				field.Errors = append(field.Errors, "Date/time must not be before "+c.Min.Format(datetimeLocalFormat)+".")
 			}
 
 			if !c.Max.IsZero() && v.After(c.Max) {
-				out.addFieldErrors(name, "Date/time must not be after "+c.Max.Format(datetimeLocalFormat)+".")
+				field.Errors = append(field.Errors, "Date/time must not be after "+c.Max.Format(datetimeLocalFormat)+".")
 			}
 
 			data[name] = v
@@ -164,14 +168,14 @@ func (f FormBuilder) Parse(form url.Values) (Form, map[string]any) {
 			}
 
 			if !found {
-				out.addFieldErrors(name, fmt.Sprintf("%s is not a valid selection.", value))
+				field.Errors = append(field.Errors, fmt.Sprintf("%s is not a valid selection.", value))
 			}
 
 			if c.Parse == nil {
 				data[name] = value
 			} else {
 				v, err := c.Parse(value)
-				out.addFieldErrors(name, err...)
+				field.Errors = append(field.Errors, err...)
 				data[name] = v
 			}
 
@@ -190,20 +194,22 @@ func (f FormBuilder) Parse(form url.Values) (Form, map[string]any) {
 				}
 
 				if !found {
-					out.addFieldErrors(name, fmt.Sprintf("%s is not a valid selection.", value))
+					field.Errors = append(field.Errors, fmt.Sprintf("%s is not a valid selection.", value))
 				}
 
 				if c.Parse == nil {
 					dataValues = append(dataValues, value)
 				} else {
 					v, err := c.Parse(value)
-					out.addFieldErrors(name, err...)
+					field.Errors = append(field.Errors, err...)
 					dataValues = append(dataValues, v)
 				}
 			}
 
 			data[name] = dataValues
 		}
+
+		out.fields[name] = field
 	}
 
 	return out, data

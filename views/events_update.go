@@ -2,6 +2,7 @@ package views
 
 import (
 	"net/http"
+	"net/url"
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -87,10 +88,11 @@ func EventsUpdate(cfg aws.Config, tableName string) http.HandlerFunc {
 			return
 		}
 
-		form := updateEventForm.Empty()
-		form.Set("name", eventOut.Event.Name)
-		form.Set("startTime", eventOut.Event.StartTime.Format("2006-01-02T15:04"))
+		form, _ := updateEventForm.Parse(url.Values{
+			"name":      {eventOut.Event.Name},
+			"startTime": {eventOut.Event.StartTime.Format("2006-01-02T15:04")},
+		})
 
-		eventsUpdateTmpl.Render(w, r, 200, &data{Nav: defaultNavItems, Form: updateEventForm.Empty()})
+		eventsUpdateTmpl.Render(w, r, 200, &data{Nav: defaultNavItems, Form: form})
 	}
 }

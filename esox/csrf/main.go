@@ -10,11 +10,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/rs/zerolog/log"
+	"github.com/rs/zerolog"
 )
 
 func getCSRF(r *http.Request) string {
-	log := log.Ctx(r.Context())
+	log := zerolog.Ctx(r.Context())
 
 	if t := r.FormValue("_csrf"); len(t) > 0 {
 		log.Debug().Msg("CSRF token found in form value _csrf.")
@@ -70,7 +70,7 @@ var (
 )
 
 func (csrf CSRF) Validate(ctx context.Context, token string) error {
-	log := log.Ctx(ctx).With().Str("csrf", token).Logger()
+	log := zerolog.Ctx(ctx).With().Str("csrf", token).Logger()
 
 	splittedValue := strings.SplitN(token, ".", 2)
 	if len(splittedValue) != 2 {

@@ -10,7 +10,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"github.com/rs/xid"
-	"github.com/rs/zerolog/log"
+	"github.com/rs/zerolog"
 	"github.com/xremming/abborre/esox"
 )
 
@@ -118,7 +118,7 @@ type UpdateEventOut struct {
 }
 
 func UpdateEvent(ctx context.Context, dynamo *dynamodb.Client, in UpdateEventIn) (UpdateEventOut, error) {
-	log := log.Ctx(ctx).With().Interface("UpdateEventIn", in).Logger()
+	log := zerolog.Ctx(ctx).With().Interface("UpdateEventIn", in).Logger()
 	log.Info().Msg("UpdateEvent")
 
 	cond := expression.Name("pk").Equal(expression.Value("event"))

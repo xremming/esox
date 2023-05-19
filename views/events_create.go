@@ -6,7 +6,7 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
-	"github.com/rs/zerolog/hlog"
+	"github.com/rs/zerolog"
 	"github.com/xremming/abborre/esox"
 	"github.com/xremming/abborre/esox/flash"
 	"github.com/xremming/abborre/esox/forms"
@@ -54,7 +54,7 @@ func EventsCreate(cfg aws.Config, tableName string) http.HandlerFunc {
 		Done()
 
 	return func(w http.ResponseWriter, r *http.Request) {
-		log := hlog.FromRequest(r)
+		log := zerolog.Ctx(r.Context())
 
 		if r.Method == http.MethodPost {
 			err := r.ParseForm()

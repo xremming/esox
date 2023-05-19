@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net"
 	"net/http"
 	"os"
 	"os/signal"
@@ -95,9 +96,16 @@ func (a *App) Run(ctx context.Context, conf RunConfig) error {
 	log := setupLogger(conf.Dev)
 	ctx = log.WithContext(ctx)
 
+	if a.CSRF != nil {
+		log.Info().Msg("CSRF protection enabled")
+		ctx = csrf.NewContext(ctx, a.CSRF)
+	} else {
+		log.Warn().Msg("CSRF protection disabled")
+	}
+
 	handler := a.Handler(ctx)
 
-	// If AWS_LAMBDA_RUNTIME_API is set, start the Lambda runtime API.
+	// If AWS_LAMBDA_RUNTIME_API is set, start the Lambda runtime API instead.
 	if _, ok := os.LookupEnv("AWS_LAMBDA_RUNTIME_API"); ok {
 		lambdaurl.Start(handler)
 		return nil
@@ -107,11 +115,14 @@ func (a *App) Run(ctx context.Context, conf RunConfig) error {
 	srv := &http.Server{
 		Addr:    addr,
 		Handler: handler,
+		BaseContext: func(_ net.Listener) context.Context {
+			return ctx
+		},
 	}
 
 	go func() {
 		log.Info().
-			Interface("conf", conf).
+			Str("addr", addr).
 			Msg("HTTP server starting")
 
 		err := srv.ListenAndServe()

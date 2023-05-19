@@ -9,7 +9,7 @@ import (
 	"time"
 	_ "time/tzdata"
 
-	"github.com/rs/zerolog/log"
+	"github.com/rs/zerolog"
 	"github.com/xremming/abborre/esox/csrf"
 )
 
@@ -59,9 +59,11 @@ func (f FormBuilder) Empty(ctx context.Context) Form {
 	}
 
 	out := Form{f.fieldOrdering, make(map[string]Field, len(f.fields)), nil}
+	log := zerolog.Ctx(ctx)
 
 	csrfStruct := csrf.FromContext(ctx)
 	if csrfStruct != nil {
+		log.Debug().Msg("Generating CSRF token.")
 		out.fieldOrdering = append(out.fieldOrdering, "_csrf")
 		out.fields["_csrf"] = Field{
 			Name:  "_csrf",
@@ -100,7 +102,7 @@ func (f FormBuilder) Parse(ctx context.Context, form url.Values) (Form, map[stri
 		panic("FormBuilder must be marked as done before parsing.")
 	}
 
-	log := log.Ctx(ctx).With().Interface("form", form).Logger()
+	log := zerolog.Ctx(ctx).With().Interface("form", form).Logger()
 
 	out := Form{f.fieldOrdering, make(map[string]Field, len(f.fields)), nil}
 	data := make(map[string]any)

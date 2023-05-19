@@ -6,7 +6,7 @@ import (
 	ics "github.com/arran4/golang-ical"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
-	"github.com/rs/zerolog/log"
+	"github.com/rs/zerolog"
 	"github.com/xremming/abborre/models"
 )
 
@@ -14,7 +14,7 @@ func EventsListICS(cfg aws.Config, tableName string) http.HandlerFunc {
 	dynamo := dynamodb.NewFromConfig(cfg)
 
 	return func(w http.ResponseWriter, r *http.Request) {
-		log := log.Ctx(r.Context())
+		log := zerolog.Ctx(r.Context())
 
 		resp, err := models.ListEvents(r.Context(), dynamo, models.ListEventsIn{TableName: tableName})
 		if err != nil {

@@ -14,19 +14,19 @@ import (
 )
 
 func getCSRF(r *http.Request) string {
-	logger := log.Ctx(r.Context())
+	log := log.Ctx(r.Context())
 
 	if t := r.FormValue("_csrf"); len(t) > 0 {
-		logger.Debug().Msg("CSRF token found in form value _csrf.")
+		log.Debug().Msg("CSRF token found in form value _csrf.")
 		return t
 	} else if t := r.URL.Query().Get("_csrf"); len(t) > 0 {
-		logger.Debug().Msg("CSRF token found in query parameter _csrf.")
+		log.Debug().Msg("CSRF token found in query parameter _csrf.")
 		return t
 	} else if t := r.Header.Get("X-CSRF-TOKEN"); len(t) > 0 {
-		logger.Debug().Msg("CSRF token found in header X-CSRF-TOKEN.")
+		log.Debug().Msg("CSRF token found in header X-CSRF-TOKEN.")
 		return t
 	} else if t := r.Header.Get("X-XSRF-TOKEN"); len(t) > 0 {
-		logger.Debug().Msg("CSRF token found in header X-XSRF-TOKEN.")
+		log.Debug().Msg("CSRF token found in header X-XSRF-TOKEN.")
 		return t
 	}
 
@@ -70,11 +70,11 @@ var (
 )
 
 func (csrf CSRF) Validate(ctx context.Context, token string) error {
-	logger := log.Ctx(ctx).With().Str("csrf", token).Logger()
+	log := log.Ctx(ctx).With().Str("csrf", token).Logger()
 
 	splittedValue := strings.SplitN(token, ".", 2)
 	if len(splittedValue) != 2 {
-		logger.Error().Msg("CSRF token is invalid.")
+		log.Error().Msg("CSRF token is invalid.")
 		return ErrTokenInvalid
 	}
 
@@ -82,13 +82,13 @@ func (csrf CSRF) Validate(ctx context.Context, token string) error {
 
 	parsedTimestamp, err := time.Parse(time.RFC3339, timestamp)
 	if err != nil {
-		logger.Err(err).Msg("CSRF token's timestamp is invalid.")
+		log.Err(err).Msg("CSRF token's timestamp is invalid.")
 		return ErrTokenInvalid
 	}
 
 	signature, err := base64.URLEncoding.DecodeString(signatureBase64URL)
 	if err != nil {
-		logger.Err(err).Msg("CSRF token's signature is invalid.")
+		log.Err(err).Msg("CSRF token's signature is invalid.")
 		return ErrTokenInvalid
 	}
 
@@ -106,12 +106,12 @@ func (csrf CSRF) Validate(ctx context.Context, token string) error {
 	}
 
 	if !ok {
-		logger.Debug().Msg("CSRF token's signature is invalid.")
+		log.Debug().Msg("CSRF token's signature is invalid.")
 		return ErrTokenSignature
 	}
 
 	if time.Now().UTC().Sub(parsedTimestamp) > maxAge {
-		logger.Debug().Msg("CSRF token has expired.")
+		log.Debug().Msg("CSRF token has expired.")
 		return ErrTokenExpired
 	}
 

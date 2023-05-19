@@ -118,8 +118,8 @@ type UpdateEventOut struct {
 }
 
 func UpdateEvent(ctx context.Context, dynamo *dynamodb.Client, in UpdateEventIn) (UpdateEventOut, error) {
-	logger := log.Ctx(ctx).With().Interface("UpdateEventIn", in).Logger()
-	logger.Info().Msg("UpdateEvent")
+	log := log.Ctx(ctx).With().Interface("UpdateEventIn", in).Logger()
+	log.Info().Msg("UpdateEvent")
 
 	cond := expression.Name("pk").Equal(expression.Value("event"))
 
@@ -139,7 +139,7 @@ func UpdateEvent(ctx context.Context, dynamo *dynamodb.Client, in UpdateEventIn)
 
 	expr, err := expression.NewBuilder().WithCondition(cond).WithUpdate(update).Build()
 	if err != nil {
-		logger.Err(err).Msg("Failed to build expression")
+		log.Err(err).Msg("Failed to build expression")
 		return UpdateEventOut{}, err
 	}
 
@@ -156,18 +156,18 @@ func UpdateEvent(ctx context.Context, dynamo *dynamodb.Client, in UpdateEventIn)
 		ReturnValues:              types.ReturnValueAllNew,
 	})
 	if err != nil {
-		logger.Err(err).Msg("Failed to update event")
+		log.Err(err).Msg("Failed to update event")
 		return UpdateEventOut{}, err
 	}
 
 	event := Event{}
 	err = attributevalue.UnmarshalMap(res.Attributes, &event)
 	if err != nil {
-		logger.Err(err).Msg("Failed to unmarshal event")
+		log.Err(err).Msg("Failed to unmarshal event")
 		return UpdateEventOut{}, err
 	}
 
-	logger.Debug().Interface("UpdateEventOut", event).Msg("Updated event")
+	log.Debug().Interface("UpdateEventOut", event).Msg("Updated event")
 	return UpdateEventOut{event}, nil
 }
 

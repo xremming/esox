@@ -100,7 +100,7 @@ func (f FormBuilder) Parse(ctx context.Context, form url.Values) (Form, map[stri
 		panic("FormBuilder must be marked as done before parsing.")
 	}
 
-	logger := log.Ctx(ctx).With().Interface("form", form).Logger()
+	log := log.Ctx(ctx).With().Interface("form", form).Logger()
 
 	out := Form{f.fieldOrdering, make(map[string]Field, len(f.fields)), nil}
 	data := make(map[string]any)
@@ -113,7 +113,7 @@ func (f FormBuilder) Parse(ctx context.Context, form url.Values) (Form, map[stri
 	if csrfStruct != nil {
 		err := csrfStruct.Validate(ctx, form.Get("_csrf"))
 		if err != nil {
-			logger.Err(err).Msg("CSRF token validation failed.")
+			log.Err(err).Msg("CSRF token validation failed.")
 
 			if errors.Is(err, csrf.ErrTokenExpired) {
 				out.Errors = append(out.Errors, "Form has expired, please retry.")
@@ -188,7 +188,7 @@ func (f FormBuilder) Parse(ctx context.Context, form url.Values) (Form, map[stri
 			} else {
 				location, errLocation := time.LoadLocation(c.Location)
 				if errLocation != nil {
-					logger.Err(errLocation).Str("location", c.Location).Msg("invalid location")
+					log.Err(errLocation).Str("location", c.Location).Msg("invalid location")
 					field.Errors = append(field.Errors, "Invalid location.")
 				} else {
 					v, err = time.ParseInLocation(datetimeLocalFormat, value, location)

@@ -58,10 +58,10 @@ func (a *App) middleware(log zerolog.Logger) alice.Chain {
 }
 
 func (a *App) Handler(ctx context.Context) http.Handler {
-	logger := zerolog.Ctx(ctx)
+	log := zerolog.Ctx(ctx)
 
 	mux := http.NewServeMux()
-	c := a.middleware(*logger)
+	c := a.middleware(*log)
 
 	hasRootPath := false
 	for path, handler := range a.Routes {
@@ -92,8 +92,8 @@ type RunConfig struct {
 }
 
 func (a *App) Run(ctx context.Context, conf RunConfig) error {
-	logger := setupLogger(conf.Dev)
-	ctx = logger.WithContext(ctx)
+	log := setupLogger(conf.Dev)
+	ctx = log.WithContext(ctx)
 
 	handler := a.Handler(ctx)
 
@@ -110,15 +110,15 @@ func (a *App) Run(ctx context.Context, conf RunConfig) error {
 	}
 
 	go func() {
-		logger.Info().
+		log.Info().
 			Interface("conf", conf).
 			Msg("HTTP server starting")
 
 		err := srv.ListenAndServe()
 		if errors.Is(err, http.ErrServerClosed) {
-			logger.Info().Msg("HTTP server closed")
+			log.Info().Msg("HTTP server closed")
 		} else {
-			logger.Err(err).Msg("HTTP server ListenAndServe failed")
+			log.Err(err).Msg("HTTP server ListenAndServe failed")
 		}
 	}()
 
@@ -137,7 +137,7 @@ func (a *App) Run(ctx context.Context, conf RunConfig) error {
 	defer cancel()
 
 	if err := srv.Shutdown(ctx); err != nil {
-		logger.Err(err).Msg("HTTP server shutdown had an error")
+		log.Err(err).Msg("HTTP server shutdown had an error")
 	}
 
 	return nil

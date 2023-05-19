@@ -14,7 +14,7 @@ func EventsListICS(cfg aws.Config, tableName string) http.HandlerFunc {
 	dynamo := dynamodb.NewFromConfig(cfg)
 
 	return func(w http.ResponseWriter, r *http.Request) {
-		logger := log.Ctx(r.Context())
+		log := log.Ctx(r.Context())
 
 		resp, err := models.ListEvents(r.Context(), dynamo, models.ListEventsIn{TableName: tableName})
 		if err != nil {
@@ -46,7 +46,7 @@ func EventsListICS(cfg aws.Config, tableName string) http.HandlerFunc {
 
 		err = cal.SerializeTo(w)
 		if err != nil {
-			logger.Err(err).Msg("Failed to serialize calendar")
+			log.Err(err).Msg("Failed to serialize calendar")
 		}
 	}
 }

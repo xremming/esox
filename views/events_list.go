@@ -17,6 +17,7 @@ func EventsList(cfg aws.Config, tableName string) http.HandlerFunc {
 	dynamo := dynamodb.NewFromConfig(cfg)
 
 	return func(w http.ResponseWriter, r *http.Request) {
+
 		log := hlog.FromRequest(r)
 
 		pager := dynamodb.NewQueryPaginator(dynamo, &dynamodb.QueryInput{

@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io/fs"
 	"net"
 	"net/http"
 	"os"
@@ -30,10 +31,32 @@ func notFoundMiddleware(notFound http.Handler) alice.Constructor {
 	}
 }
 
+type XFrameOptions string
+
+const (
+	XFrameOptionsDeny       XFrameOptions = "DENY"
+	XFrameOptionsSameOrigin XFrameOptions = "SAMEORIGIN"
+)
+
+type Security struct {
+	XFrameOptions XFrameOptions
+	NoSniff       bool
+	CSP           string
+	// TODO: HSTS
+}
+
+var DefaultSecurity = Security{
+	XFrameOptions: XFrameOptionsDeny,
+	NoSniff:       true,
+	CSP:           "default-src 'self'",
+}
+
 type App struct {
-	Routes   map[string]http.Handler
-	Route404 http.Handler
-	CSRF     *csrf.CSRF
+	StaticResources fs.FS
+	Routes          map[string]http.Handler
+	Handler404      http.Handler
+	CSRF            *csrf.CSRF
+	Security        *Security
 }
 
 func (a *App) middleware(log zerolog.Logger) alice.Chain {
@@ -49,11 +72,35 @@ func (a *App) middleware(log zerolog.Logger) alice.Chain {
 			Dur("duration", duration).
 			Msg("")
 	}))
-	c = c.Append(hlog.MethodHandler("method"))
-	c = c.Append(hlog.RefererHandler("referer"))
-	c = c.Append(hlog.RequestIDHandler("request_id", "X-Request-ID"))
-	c = c.Append(hlog.URLHandler("url"))
-	c = c.Append(hlog.UserAgentHandler("user_agent"))
+	c = c.Append(
+		hlog.MethodHandler("method"),
+		hlog.RefererHandler("referer"),
+		hlog.RequestIDHandler("request_id", "X-Request-ID"),
+		hlog.URLHandler("url"),
+		hlog.UserAgentHandler("user_agent"),
+	)
+	c = c.Append(func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			security := DefaultSecurity
+			if a.Security != nil {
+				security = *a.Security
+			}
+
+			if security.XFrameOptions != "" {
+				w.Header().Set("X-Frame-Options", string(security.XFrameOptions))
+			}
+
+			if security.NoSniff {
+				w.Header().Set("X-Content-Type-Options", "nosniff")
+			}
+
+			if security.CSP != "" {
+				w.Header().Set("Content-Security-Policy", security.CSP)
+			}
+
+			next.ServeHTTP(w, r)
+		})
+	})
 
 	return c
 }
@@ -66,16 +113,16 @@ func (a *App) Handler(ctx context.Context) http.Handler {
 
 	hasRootPath := false
 	for path, handler := range a.Routes {
-		if path == "/" && a.Route404 != nil {
+		if path == "/" && a.Handler404 != nil {
 			hasRootPath = true
-			mux.Handle(path, c.Append(notFoundMiddleware(a.Route404)).Then(handler))
+			mux.Handle(path, c.Append(notFoundMiddleware(a.Handler404)).Then(handler))
 		} else {
 			mux.Handle(path, c.Then(handler))
 		}
 	}
 
-	if !hasRootPath && a.Route404 != nil {
-		mux.Handle("/", c.Append(notFoundMiddleware(a.Route404)).Then(http.NotFoundHandler()))
+	if !hasRootPath && a.Handler404 != nil {
+		mux.Handle("/", c.Append(notFoundMiddleware(a.Handler404)).Then(http.NotFoundHandler()))
 	}
 
 	return mux

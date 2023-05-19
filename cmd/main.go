@@ -107,7 +107,7 @@ func main() {
 			"/events/update":   views.EventsUpdate(aws, *flagTableName),
 			"/events/calendar": views.EventsListICS(aws, *flagTableName),
 		},
-		Route404: views.NotFound(),
+		Handler404: views.NotFound(),
 		CSRF: &csrf.CSRF{
 			Secrets: []string{"secret"},
 		},

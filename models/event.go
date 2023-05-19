@@ -2,6 +2,7 @@ package models
 
 import (
 	"context"
+	"strings"
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
@@ -9,6 +10,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"github.com/rs/xid"
+	"github.com/rs/zerolog/log"
 	"github.com/xremming/abborre/esox"
 )
 
@@ -17,6 +19,20 @@ type Event struct {
 	Name      string     `dynamodbav:"name"`
 	StartTime time.Time  `dynamodbav:"starts,unixtime"`
 	EndTime   *time.Time `dynamodbav:"ends,unixtime,omitempty"`
+}
+
+func (e Event) ID() xid.ID {
+	splitted := strings.SplitN(e.Base.SortKey, ":", 2)
+	if len(splitted) != 2 {
+		return xid.ID{}
+	}
+
+	id, err := xid.FromString(splitted[1])
+	if err != nil {
+		return xid.ID{}
+	}
+
+	return id
 }
 
 type CreateEventIn struct {
@@ -86,6 +102,73 @@ func GetEvent(ctx context.Context, dynamo *dynamodb.Client, in GetEventIn) (GetE
 	}
 
 	return GetEventOut{Event: event}, nil
+}
+
+type UpdateEventIn struct {
+	TableName string
+
+	ID        xid.ID
+	Name      *string
+	StartTime *time.Time
+	EndTime   *time.Time
+}
+
+type UpdateEventOut struct {
+	Event Event
+}
+
+func UpdateEvent(ctx context.Context, dynamo *dynamodb.Client, in UpdateEventIn) (UpdateEventOut, error) {
+	logger := log.Ctx(ctx).With().Interface("UpdateEventIn", in).Logger()
+	logger.Info().Msg("UpdateEvent")
+
+	cond := expression.Name("pk").Equal(expression.Value("event"))
+
+	update := baseUpdate(time.Now())
+
+	if in.Name != nil {
+		update = update.Set(expression.Name("name"), expression.Value(in.Name))
+	}
+
+	if in.StartTime != nil {
+		update = update.Set(expression.Name("starts"), expression.Value(in.StartTime.Unix()))
+	}
+
+	if in.EndTime != nil {
+		update = update.Set(expression.Name("ends"), expression.Value(in.EndTime.Unix()))
+	}
+
+	expr, err := expression.NewBuilder().WithCondition(cond).WithUpdate(update).Build()
+	if err != nil {
+		logger.Err(err).Msg("Failed to build expression")
+		return UpdateEventOut{}, err
+	}
+
+	res, err := dynamo.UpdateItem(ctx, &dynamodb.UpdateItemInput{
+		TableName: &in.TableName,
+		Key: map[string]types.AttributeValue{
+			"pk": &types.AttributeValueMemberS{Value: "event"},
+			"sk": &types.AttributeValueMemberS{Value: esox.JoinID("event", in.ID)},
+		},
+		ConditionExpression:       expr.Condition(),
+		ExpressionAttributeNames:  expr.Names(),
+		ExpressionAttributeValues: expr.Values(),
+		UpdateExpression:          expr.Update(),
+		ReturnValues:              types.ReturnValueAllNew,
+	})
+	if err != nil {
+		logger.Err(err).Msg("Failed to update event")
+		return UpdateEventOut{}, err
+	}
+
+	event := Event{}
+	err = attributevalue.UnmarshalMap(res.Attributes, &event)
+	if err != nil {
+		logger.Err(err).Msg("Failed to unmarshal event")
+		return UpdateEventOut{}, err
+	}
+
+	logger.Debug().Interface("UpdateEventOut", event).Msg("Updated event")
+	return UpdateEventOut{event}, nil
 }
 
 type ListEventsIn struct {

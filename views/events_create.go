@@ -37,6 +37,7 @@ func EventsCreate(cfg aws.Config, tableName string) http.HandlerFunc {
 				Options: []forms.OptionConfig{
 					{Value: "15m", Label: "15 minutes"},
 					{Value: "30m", Label: "30 minutes"},
+					{Value: "45m", Label: "45 minutes"},
 					{Value: "1h", Label: "1 hour", Selected: true},
 					{Value: "2h", Label: "2 hours"},
 					{Value: "3h", Label: "3 hours"},

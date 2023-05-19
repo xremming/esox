@@ -25,6 +25,10 @@ func (f *Form) Fields() []Field {
 	return fields
 }
 
+func (f *Form) Set(name, value string) {
+	f.setFieldValue(name, value)
+}
+
 func (f *Form) setFieldValue(name, value string) {
 	field, ok := f.fields[name]
 	if !ok {

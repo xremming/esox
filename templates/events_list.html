@@ -1,7 +1,7 @@
 {{ define "body" }}
 <ul>
   {{ range .Data }}
-  <li>{{ .Name }}</li>
+  <li>{{ .Name }} (<a href="/events/update?id={{ .ID }}">edit</a>)</li>
   <ul>
     <li>Starts: {{ .StartTime }}</li>
     <li>Ends: {{ .EndTime }}</li>

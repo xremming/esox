@@ -1,7 +1,6 @@
 package esox
 
 import (
-	"bytes"
 	"html/template"
 	"io"
 	"io/fs"
@@ -11,6 +10,7 @@ import (
 
 	"github.com/rs/zerolog/hlog"
 	"github.com/xremming/abborre/esox/flash"
+	"github.com/xremming/abborre/esox/utils"
 )
 
 type Renderer struct {
@@ -40,26 +40,26 @@ func (re *Renderer) GetTemplate(name, baseName string) *Page {
 	}
 	defer childFile.Close()
 
-	buffer := getBytesBuffer()
-	defer putBytesBuffer(buffer)
+	buf := utils.GetBytesBuffer()
+	defer utils.PutBytesBuffer(buf)
 
-	_, err = io.Copy(buffer, baseFile)
+	_, err = io.Copy(buf, baseFile)
 	if err != nil {
 		panic(err)
 	}
 
-	tmpl, err := template.New(name).Parse(buffer.String())
+	tmpl, err := template.New(name).Parse(buf.String())
 	if err != nil {
 		panic(err)
 	}
 
-	buffer.Reset()
-	_, err = io.Copy(buffer, childFile)
+	buf.Reset()
+	_, err = io.Copy(buf, childFile)
 	if err != nil {
 		panic(err)
 	}
 
-	tmpl, err = tmpl.Parse(buffer.String())
+	tmpl, err = tmpl.Parse(buf.String())
 	if err != nil {
 		panic(err)
 	}
@@ -113,9 +113,8 @@ func (p *Page) Render(w http.ResponseWriter, r *http.Request, code int, data Ren
 		Str("template", p.name).
 		Logger()
 
-	buf := bytesBufferPool.Get().(*bytes.Buffer)
-	buf.Reset()
-	defer bytesBufferPool.Put(buf)
+	buf := utils.GetBytesBuffer()
+	defer utils.PutBytesBuffer(buf)
 
 	flashes := flash.FromRequest(r)
 	setFlashCookie(w, r, false, flashes)

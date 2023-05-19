@@ -1,29 +1,6 @@
 {{ define "body" }}
 <form method="post" class="form-control">
-  {{ range .Form.Fields }}
-  <div class="form-field">
-    <label for="{{ .ID }}">{{ .Label }}{{ if .Required }}*{{ end }}</label>
-    {{ if eq .Kind "text" }}
-      <input id="{{ .ID }}" type="text" name="{{ .Name }}" value="{{ .Value }}" />
-    {{ else if eq .Kind "datetime-local" }}
-      <input id="{{ .ID }}" type="datetime-local" name="{{ .Name }}" value="{{ .Value }}" />
-    {{ else if eq .Kind "select" }}
-      <select id="{{ .ID }}" name="{{ .Name }}">
-        {{ range .Options }}
-        <option value="{{ .Value }}"{{ if .Selected }} selected{{ end }}>{{ .Label }}</option>
-        {{ end }}
-      </select>
-    {{ end }}
-
-    {{ range .Errors }}
-    <div>{{ . }}</div>
-    {{ end }}
-  </div>
-  {{ end }}
-
-  {{ range .Form.Errors }}
-  <div>{{ . }}</div>
-  {{ end }}
+  {{ .Form.RenderDiv "form-field" "form-error" }}
   <input type="submit" value="Create" />
 </form>
 {{ end }}

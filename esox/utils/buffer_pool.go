@@ -1,4 +1,4 @@
-package esox
+package utils
 
 import (
 	"bytes"
@@ -9,12 +9,12 @@ var bytesBufferPool = sync.Pool{New: func() interface{} {
 	return new(bytes.Buffer)
 }}
 
-func getBytesBuffer() *bytes.Buffer {
+func GetBytesBuffer() *bytes.Buffer {
 	out := bytesBufferPool.Get().(*bytes.Buffer)
 	out.Reset()
 	return out
 }
 
-func putBytesBuffer(b *bytes.Buffer) {
+func PutBytesBuffer(b *bytes.Buffer) {
 	bytesBufferPool.Put(b)
 }

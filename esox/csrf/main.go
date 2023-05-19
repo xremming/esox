@@ -110,9 +110,16 @@ func (csrf CSRF) Validate(ctx context.Context, token string) error {
 		return ErrTokenSignature
 	}
 
-	if time.Now().UTC().Sub(parsedTimestamp) > maxAge {
+	now := time.Now().UTC()
+	if now.Sub(parsedTimestamp) > maxAge {
 		log.Debug().Msg("CSRF token has expired.")
 		return ErrTokenExpired
+	}
+
+	// Allow for up to 1 minute of clock skew.
+	if parsedTimestamp.After(now.Add(1 * time.Second)) {
+		log.Debug().Msg("CSRF token is in the future.")
+		return ErrTokenInvalid
 	}
 
 	return nil

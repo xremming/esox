@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/rs/zerolog/hlog"
 	"github.com/xremming/abborre/esox"
 	"github.com/xremming/abborre/esox/flash"
 	"github.com/xremming/abborre/esox/forms"
@@ -18,6 +19,7 @@ var defaultNavItems = []navItem{
 	{Name: "Home", URL: "/"},
 	{Name: "Events", URL: "/events"},
 	{Name: "Create Event", URL: "/admin/events/create"},
+	{Name: "Login", URL: "/discord/login"},
 }
 
 type data struct {
@@ -44,10 +46,20 @@ type renderErrorData struct {
 	StatusCode   int
 	StatusText   string
 	ErrorMessage string
+	RequestID    string
 }
 
 func renderError(w http.ResponseWriter, r *http.Request, statusCode int, errorMessage string) {
-	errorTmpl.Render(w, r, statusCode, &data{
-		Data: renderErrorData{statusCode, http.StatusText(statusCode), errorMessage},
-	})
+	errorData := renderErrorData{
+		StatusCode:   statusCode,
+		StatusText:   http.StatusText(statusCode),
+		ErrorMessage: errorMessage,
+	}
+
+	requestID, ok := hlog.IDFromRequest(r)
+	if ok {
+		errorData.RequestID = requestID.String()
+	}
+
+	errorTmpl.Render(w, r, statusCode, &data{Data: errorData})
 }

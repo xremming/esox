@@ -63,13 +63,15 @@ func (f FormBuilder) Empty(ctx context.Context) Form {
 
 	csrfStruct := csrf.FromContext(ctx)
 	if csrfStruct != nil {
-		log.Debug().Msg("Generating CSRF token.")
+		log.Info().Msg("Generating CSRF token for an empty form.")
 		out.fieldOrdering = append(out.fieldOrdering, "_csrf")
 		out.fields["_csrf"] = Field{
 			Name:  "_csrf",
 			Kind:  KindHidden,
 			Value: csrfStruct.Generate(),
 		}
+	} else {
+		log.Warn().Msg("No CSRF token available for an empty form.")
 	}
 
 	for name, field := range f.fields {
@@ -141,6 +143,8 @@ func (f FormBuilder) parse(ctx context.Context, form url.Values, prefilling bool
 				}
 			}
 		}
+	} else {
+		log.Warn().Msg("CSRF is not configured, skipping CSRF token generation and validation.")
 	}
 
 	for name, field := range f.fields {

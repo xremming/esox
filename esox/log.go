@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/rs/zerolog"
+	globalLog "github.com/rs/zerolog/log"
 )
 
 func setupLogger(isDev bool) zerolog.Logger {
@@ -15,6 +16,7 @@ func setupLogger(isDev bool) zerolog.Logger {
 	}
 
 	log := zerolog.New(w).With().Timestamp().Caller().Logger()
+	globalLog.Logger = log
 	zerolog.DefaultContextLogger = &log
 
 	return log

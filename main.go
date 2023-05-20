@@ -52,10 +52,11 @@ func GetEnvBoolOrDefault(key string, defaultValue bool) bool {
 }
 
 var (
-	flagDev       = flag.Bool("dev", GetEnvBoolOrDefault("DEV", false), "Development mode")
-	flagHost      = flag.String("host", GetEnvOrDefault("HOST", "localhost"), "HTTP host")
-	flagPort      = flag.Int("port", GetEnvIntOrDefault("PORT", 8000), "HTTP port")
-	flagTableName = flag.String("table-name", GetEnvOrDefault("TABLE_NAME", "abborre"), "DynamoDB table name")
+	flagDev           = flag.Bool("dev", GetEnvBoolOrDefault("DEV", false), "Development mode")
+	flagHost          = flag.String("host", GetEnvOrDefault("HOST", "localhost"), "HTTP host")
+	flagPort          = flag.Int("port", GetEnvIntOrDefault("PORT", 8000), "HTTP port")
+	flagTableName     = flag.String("table-name", GetEnvOrDefault("TABLE_NAME", "abborre"), "DynamoDB table name")
+	flagAdminPassword = flag.String("admin-password", GetEnvOrDefault("ADMIN_PASSWORD", "secret"), "Admin password")
 )
 
 func init() {
@@ -98,14 +99,16 @@ func main() {
 		panic(err)
 	}
 
+	auth := esox.BasicAuth("admin", *flagAdminPassword)
+
 	app := esox.App{
 		StaticResources: os.DirFS("./static/"),
 		Routes: map[string]http.Handler{
-			"/":                views.Home(),
-			"/events":          views.EventsList(aws, *flagTableName),
-			"/events/create":   views.EventsCreate(aws, *flagTableName),
-			"/events/update":   views.EventsUpdate(aws, *flagTableName),
-			"/events/calendar": views.EventsListICS(aws, *flagTableName),
+			"/":                    views.Home(),
+			"/events":              views.EventsList(aws, *flagTableName),
+			"/events/calendar":     views.EventsListICS(aws, *flagTableName),
+			"/admin/events/create": auth(views.EventsCreate(aws, *flagTableName)),
+			"/admin/events/update": auth(views.EventsUpdate(aws, *flagTableName)),
 		},
 		Handler404: views.NotFound(),
 		CSRF: &csrf.CSRF{

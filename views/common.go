@@ -17,7 +17,7 @@ type navItem struct {
 var defaultNavItems = []navItem{
 	{Name: "Home", URL: "/"},
 	{Name: "Events", URL: "/events"},
-	{Name: "Create Event", URL: "/events/create"},
+	{Name: "Create Event", URL: "/admin/events/create"},
 }
 
 type data struct {

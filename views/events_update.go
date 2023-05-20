@@ -25,6 +25,10 @@ func EventsUpdate(cfg aws.Config, tableName string) http.HandlerFunc {
 			Label:  "Name",
 			Config: forms.TextConfig{MinLength: 3, MaxLength: 256},
 		}).
+		Field("description", forms.FieldBuilder[forms.TextConfig]{
+			Label:  "Description",
+			Config: forms.TextConfig{Multiline: true, MinLength: 3},
+		}).
 		Field("startTime", forms.FieldBuilder[forms.DateTimeLocalConfig]{
 			Label: "Start Time",
 			Config: forms.DateTimeLocalConfig{
@@ -67,6 +71,12 @@ func EventsUpdate(cfg aws.Config, tableName string) http.HandlerFunc {
 				update.Name = &v
 			}
 
+			description, ok := parsedForm["description"]
+			if ok {
+				v := description.(string)
+				update.Description = &v
+			}
+
 			startTime, ok := parsedForm["startTime"]
 			if ok {
 				v := startTime.(time.Time)
@@ -99,9 +109,10 @@ func EventsUpdate(cfg aws.Config, tableName string) http.HandlerFunc {
 		}
 
 		form := updateEventForm.Prefilled(r.Context(), url.Values{
-			"name":      {eventOut.Event.Name},
-			"startTime": {eventOut.Event.StartTime.Format(forms.FormatDatetimeLocal)},
-			"duration":  {eventOut.Event.Duration.String()},
+			"name":        {eventOut.Event.Name},
+			"description": {eventOut.Event.Description},
+			"startTime":   {eventOut.Event.StartTime.Format(forms.FormatDatetimeLocal)},
+			"duration":    {eventOut.Event.Duration.String()},
 		})
 
 		eventsUpdateTmpl.Render(w, r, 200, &data{Nav: defaultNavItems, Form: form})

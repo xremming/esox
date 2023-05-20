@@ -35,8 +35,9 @@ func EventsListICS(cfg aws.Config, tableName string) http.HandlerFunc {
 			ev.SetDuration(event.Duration)
 
 			ev.SetSummary(event.Name)
-			// ev.SetDescription(event.Description)
-			ev.SetURL("localhost:8080/events/" + event.ID().String())
+			ev.SetDescription(event.Description)
+			// TODO: use base URL
+			ev.SetURL("http://localhost:8080/events/" + event.ID().String())
 		}
 
 		w.Header().Set("Content-Type", "text/calendar")

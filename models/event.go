@@ -16,9 +16,10 @@ import (
 
 type Event struct {
 	Base
-	Name      string        `dynamodbav:"name"`
-	StartTime time.Time     `dynamodbav:"starts,unixtime"`
-	Duration  time.Duration `dynamodbav:"duration"`
+	Name        string        `dynamodbav:"name"`
+	Description string        `dynamodbav:"description"`
+	StartTime   time.Time     `dynamodbav:"starts,unixtime"`
+	Duration    time.Duration `dynamodbav:"duration"`
 }
 
 func (e Event) ID() xid.ID {
@@ -38,9 +39,10 @@ func (e Event) ID() xid.ID {
 type CreateEventIn struct {
 	TableName string
 
-	Name      string
-	StartTime time.Time
-	Duration  time.Duration
+	Name        string
+	Description string
+	StartTime   time.Time
+	Duration    time.Duration
 }
 
 type CreateEventOut struct {
@@ -107,10 +109,11 @@ func GetEvent(ctx context.Context, dynamo *dynamodb.Client, in GetEventIn) (GetE
 type UpdateEventIn struct {
 	TableName string
 
-	ID        xid.ID
-	Name      *string
-	StartTime *time.Time
-	Duration  *time.Duration
+	ID          xid.ID
+	Name        *string
+	Description *string
+	StartTime   *time.Time
+	Duration    *time.Duration
 }
 
 type UpdateEventOut struct {
@@ -127,6 +130,10 @@ func UpdateEvent(ctx context.Context, dynamo *dynamodb.Client, in UpdateEventIn)
 
 	if in.Name != nil {
 		update = update.Set(expression.Name("name"), expression.Value(in.Name))
+	}
+
+	if in.Description != nil {
+		update = update.Set(expression.Name("description"), expression.Value(in.Description))
 	}
 
 	if in.StartTime != nil {

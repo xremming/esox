@@ -1,13 +1,14 @@
 {{ define "body" }}
-<ul>
-  {{ range .Data }}
-  <li>{{ .Name }} (<a href="/events/update?id={{ .ID }}">edit</a>)</li>
+{{ range .Data }}
+<div>
+  <h2>{{ .Name }} (<a href="/events/update?id={{ .ID }}">edit</a>)</h2>
+  <p>{{ .Description }}</p>
   <ul>
     <li>Starts: {{ .StartTime }}</li>
     <li>Duration: {{ .Duration }}</li>
     <li>Created: {{ .Created }}</li>
     <li>Updated: {{ .Updated }}</li>
   </ul>
-  {{ end }}
-</ul>
+</div>
+{{ end }}
 {{ end }}

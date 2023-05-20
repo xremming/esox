@@ -54,6 +54,7 @@ var DefaultSecurity = Security{
 }
 
 type App struct {
+	BaseURL         string
 	StaticResources fs.FS
 	Routes          map[string]http.Handler
 	Handler404      http.Handler

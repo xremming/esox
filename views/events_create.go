@@ -80,13 +80,12 @@ func EventsCreate(cfg aws.Config, tableName string) http.HandlerFunc {
 			name := parsedForm["name"].(string)
 			startTime := parsedForm["startTime"].(time.Time)
 			duration := parsedForm["duration"].(time.Duration)
-			endTime := startTime.Add(duration)
 
 			createEvent := models.CreateEventIn{
 				TableName: tableName,
 				Name:      name,
 				StartTime: startTime,
-				EndTime:   &endTime,
+				Duration:  duration,
 			}
 
 			_, err = models.CreateEvent(r.Context(), dynamo, createEvent)

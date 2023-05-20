@@ -31,6 +31,10 @@ func EventsUpdate(cfg aws.Config, tableName string) http.HandlerFunc {
 				Location: "Europe/Helsinki",
 			},
 		}).
+		Field("duration", forms.FieldBuilder[forms.TextConfig]{
+			Label:  "Duration",
+			Config: forms.TextConfig{Parse: forms.ParseDuration},
+		}).
 		Done()
 
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -69,6 +73,12 @@ func EventsUpdate(cfg aws.Config, tableName string) http.HandlerFunc {
 				update.StartTime = &v
 			}
 
+			duration, ok := parsedForm["duration"]
+			if ok {
+				v := duration.(time.Duration)
+				update.Duration = &v
+			}
+
 			_, err = models.UpdateEvent(r.Context(), dynamo, update)
 			if err != nil {
 				log.Error().Err(err).Msg("Failed to update event")
@@ -91,6 +101,7 @@ func EventsUpdate(cfg aws.Config, tableName string) http.HandlerFunc {
 		form := updateEventForm.Prefilled(r.Context(), url.Values{
 			"name":      {eventOut.Event.Name},
 			"startTime": {eventOut.Event.StartTime.Format(forms.FormatDatetimeLocal)},
+			"duration":  {eventOut.Event.Duration.String()},
 		})
 
 		eventsUpdateTmpl.Render(w, r, 200, &data{Nav: defaultNavItems, Form: form})

@@ -32,9 +32,7 @@ func EventsListICS(cfg aws.Config, tableName string) http.HandlerFunc {
 
 			ev.SetDtStampTime(event.StartTime)
 			ev.SetStartAt(event.StartTime)
-			if event.EndTime != nil {
-				ev.SetEndAt(*event.EndTime)
-			}
+			ev.SetDuration(event.Duration)
 
 			ev.SetSummary(event.Name)
 			// ev.SetDescription(event.Description)

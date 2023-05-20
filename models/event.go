@@ -16,9 +16,9 @@ import (
 
 type Event struct {
 	Base
-	Name      string     `dynamodbav:"name"`
-	StartTime time.Time  `dynamodbav:"starts,unixtime"`
-	EndTime   *time.Time `dynamodbav:"ends,unixtime,omitempty"`
+	Name      string        `dynamodbav:"name"`
+	StartTime time.Time     `dynamodbav:"starts,unixtime"`
+	Duration  time.Duration `dynamodbav:"duration"`
 }
 
 func (e Event) ID() xid.ID {
@@ -40,7 +40,7 @@ type CreateEventIn struct {
 
 	Name      string
 	StartTime time.Time
-	EndTime   *time.Time
+	Duration  time.Duration
 }
 
 type CreateEventOut struct {
@@ -55,7 +55,7 @@ func CreateEvent(ctx context.Context, dynamo *dynamodb.Client, in CreateEventIn)
 		Base:      newBaseWithTTL("event", esox.JoinID("event", id), ttl),
 		Name:      in.Name,
 		StartTime: in.StartTime,
-		EndTime:   in.EndTime,
+		Duration:  in.Duration,
 	}
 
 	item, err := attributevalue.MarshalMap(event)
@@ -110,7 +110,7 @@ type UpdateEventIn struct {
 	ID        xid.ID
 	Name      *string
 	StartTime *time.Time
-	EndTime   *time.Time
+	Duration  *time.Duration
 }
 
 type UpdateEventOut struct {
@@ -133,8 +133,8 @@ func UpdateEvent(ctx context.Context, dynamo *dynamodb.Client, in UpdateEventIn)
 		update = update.Set(expression.Name("starts"), expression.Value(in.StartTime.Unix()))
 	}
 
-	if in.EndTime != nil {
-		update = update.Set(expression.Name("ends"), expression.Value(in.EndTime.Unix()))
+	if in.Duration != nil {
+		update = update.Set(expression.Name("duration"), expression.Value(in.Duration))
 	}
 
 	expr, err := expression.NewBuilder().WithCondition(cond).WithUpdate(update).Build()

@@ -11,7 +11,7 @@ elif [ "$1" != "dev" ] && [ "$1" != "test" ] && [ "$1" != "prod" ]; then
 fi
 
 echo "Building..."
-GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -o abborre -tags lambda.norpc ./cmd/
+GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -o abborre -tags lambda.norpc
 rm -f abborre-lambda.zip
 zip -r abborre-lambda.zip ./abborre ./templates/ ./static/
 

@@ -13,8 +13,8 @@ type Key interface {
 }
 
 type Base[PK, SK Key] struct {
-	PartitionKey *PK        `dynamodbav:"pk"`
-	SortKey      *SK        `dynamodbav:"sk"`
+	PartitionKey PK         `dynamodbav:"pk"`
+	SortKey      SK         `dynamodbav:"sk"`
 	Created      time.Time  `dynamodbav:"created,unixtime"`
 	Updated      time.Time  `dynamodbav:"updated,unixtime"`
 	Version      int        `dynamodbav:"version"`
@@ -50,8 +50,8 @@ func GetKey[PK, SK Key](pk PK, sk SK) map[string]types.AttributeValue {
 func NewBase[PK, SK Key](pk PK, sk SK) Base[PK, SK] {
 	now := time.Now().UTC()
 	return Base[PK, SK]{
-		PartitionKey: &pk,
-		SortKey:      &sk,
+		PartitionKey: pk,
+		SortKey:      sk,
 		Created:      now,
 		Updated:      now,
 		Version:      1,

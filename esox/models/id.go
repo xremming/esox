@@ -23,7 +23,7 @@ func IDFromString(v string) (ID, error) {
 	return ID{id}, nil
 }
 
-func (id *ID) MarshalDynamoDBAttributeValue() (types.AttributeValue, error) {
+func (id ID) MarshalDynamoDBAttributeValue() (types.AttributeValue, error) {
 	return &types.AttributeValueMemberS{Value: id.String()}, nil
 }
 
@@ -46,13 +46,13 @@ func (id *ID) UnmarshalDynamoDBAttributeValue(av types.AttributeValue) error {
 // NSID is a namespaced ID.
 type NSID struct {
 	Namespace string
-	ID        xid.ID
+	ID        ID
 }
 
 func NewNSID(namespace string) NSID {
 	return NSID{
 		Namespace: namespace,
-		ID:        xid.New(),
+		ID:        NewID(),
 	}
 }
 
@@ -60,14 +60,14 @@ func (nsid NSID) String() string {
 	return fmt.Sprintf("%s:%s", nsid.Namespace, nsid.ID.String())
 }
 
-func (nsid *NSID) MarshalDynamoDBAttributeValue() (types.AttributeValue, error) {
+func (nsid NSID) MarshalDynamoDBAttributeValue() (types.AttributeValue, error) {
 	return &types.AttributeValueMemberS{Value: nsid.String()}, nil
 }
 
 func splitID(s string) (NSID, error) {
 	namespace, idString := cutRight(s, ':')
 
-	id, err := xid.FromString(idString)
+	id, err := IDFromString(idString)
 	if err != nil {
 		return NSID{}, err
 	}

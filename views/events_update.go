@@ -7,11 +7,11 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
-	"github.com/rs/xid"
-	"github.com/rs/zerolog/log"
+	"github.com/rs/zerolog"
 	"github.com/xremming/abborre/esox"
 	"github.com/xremming/abborre/esox/flash"
 	"github.com/xremming/abborre/esox/forms"
+	esoxModels "github.com/xremming/abborre/esox/models"
 	"github.com/xremming/abborre/models"
 )
 
@@ -42,12 +42,14 @@ func EventsUpdate(cfg aws.Config, tableName string) http.HandlerFunc {
 		Done()
 
 	return func(w http.ResponseWriter, r *http.Request) {
-		id, err := xid.FromString(r.URL.Query().Get("id"))
+		id, err := esoxModels.IDFromString(r.URL.Query().Get("id"))
 		if err != nil {
 			flash.Warning(r, "Invalid event ID.")
 			esox.Redirect(w, r, "/events", http.StatusFound)
 			return
 		}
+
+		log := zerolog.Ctx(r.Context()).With().Str("id", id.String()).Logger()
 
 		if r.Method == http.MethodPost {
 			err := r.ParseForm()
@@ -103,8 +105,13 @@ func EventsUpdate(cfg aws.Config, tableName string) http.HandlerFunc {
 
 		eventOut, err := models.GetEvent(r.Context(), dynamo, models.GetEventIn{TableName: tableName, ID: id})
 		if err != nil {
+			log.Err(err).Msg("Failed to get event")
+
 			flash.Warning(r, "Something went wrong, please try again.")
-			eventsUpdateTmpl.Render(w, r, 400, &data{Nav: defaultNavItems, Form: updateEventForm.Empty(r.Context())})
+			eventsUpdateTmpl.Render(w, r, 400, &data{
+				Nav:  defaultNavItems,
+				Form: updateEventForm.Empty(r.Context()),
+			})
 			return
 		}
 

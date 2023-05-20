@@ -2,38 +2,35 @@ package models
 
 import (
 	"context"
-	"strings"
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/expression"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
-	"github.com/rs/xid"
 	"github.com/rs/zerolog"
-	"github.com/xremming/abborre/esox"
+	"github.com/xremming/abborre/esox/models"
 )
 
 type Event struct {
-	Base
+	models.Base[string, models.ID]
 	Name        string        `dynamodbav:"name"`
 	Description string        `dynamodbav:"description"`
 	StartTime   time.Time     `dynamodbav:"starts,unixtime"`
 	Duration    time.Duration `dynamodbav:"duration"`
 }
 
-func (e Event) ID() xid.ID {
-	splitted := strings.SplitN(e.Base.SortKey, ":", 2)
-	if len(splitted) != 2 {
-		return xid.ID{}
-	}
+const eventPartitionKey = "event"
 
-	id, err := xid.FromString(splitted[1])
-	if err != nil {
-		return xid.ID{}
-	}
+var (
+	eventName        = expression.Name("name")
+	eventDescription = expression.Name("description")
+	eventStartTime   = expression.Name("starts")
+	eventDuration    = expression.Name("duration")
+)
 
-	return id
+func (e Event) ID() string {
+	return e.Base.SortKey.String()
 }
 
 type CreateEventIn struct {
@@ -50,11 +47,11 @@ type CreateEventOut struct {
 }
 
 func CreateEvent(ctx context.Context, dynamo *dynamodb.Client, in CreateEventIn) (CreateEventOut, error) {
-	id := xid.New()
+	id := models.NewID()
 	ttl := in.StartTime.Add(180 * 24 * time.Hour)
 
 	event := Event{
-		Base:      newBaseWithTTL("event", esox.JoinID("event", id), ttl),
+		Base:      models.NewBaseWithTTL("event", id, ttl),
 		Name:      in.Name,
 		StartTime: in.StartTime,
 		Duration:  in.Duration,
@@ -64,6 +61,11 @@ func CreateEvent(ctx context.Context, dynamo *dynamodb.Client, in CreateEventIn)
 	if err != nil {
 		return CreateEventOut{}, err
 	}
+
+	zerolog.Ctx(ctx).Debug().
+		Interface("event", event).
+		Interface("item", item).
+		Msg("marshalled item")
 
 	_, err = dynamo.PutItem(ctx, &dynamodb.PutItemInput{
 		TableName: &in.TableName,
@@ -78,7 +80,7 @@ func CreateEvent(ctx context.Context, dynamo *dynamodb.Client, in CreateEventIn)
 
 type GetEventIn struct {
 	TableName string
-	ID        xid.ID
+	ID        models.ID
 }
 
 type GetEventOut struct {
@@ -88,10 +90,7 @@ type GetEventOut struct {
 func GetEvent(ctx context.Context, dynamo *dynamodb.Client, in GetEventIn) (GetEventOut, error) {
 	out, err := dynamo.GetItem(ctx, &dynamodb.GetItemInput{
 		TableName: &in.TableName,
-		Key: map[string]types.AttributeValue{
-			"pk": &types.AttributeValueMemberS{Value: "event"},
-			"sk": &types.AttributeValueMemberS{Value: esox.JoinID("event", in.ID)},
-		},
+		Key:       models.GetKey(eventPartitionKey, in.ID),
 	})
 	if err != nil {
 		return GetEventOut{}, err
@@ -109,7 +108,7 @@ func GetEvent(ctx context.Context, dynamo *dynamodb.Client, in GetEventIn) (GetE
 type UpdateEventIn struct {
 	TableName string
 
-	ID          xid.ID
+	ID          models.ID
 	Name        *string
 	Description *string
 	StartTime   *time.Time
@@ -124,24 +123,24 @@ func UpdateEvent(ctx context.Context, dynamo *dynamodb.Client, in UpdateEventIn)
 	log := zerolog.Ctx(ctx).With().Interface("UpdateEventIn", in).Logger()
 	log.Info().Msg("UpdateEvent")
 
-	cond := expression.Name("pk").Equal(expression.Value("event"))
+	cond := models.NamePartitionKey.Equal(expression.Value(eventPartitionKey))
 
-	update := baseUpdate(time.Now())
+	update := models.UpdateBuilder(time.Now())
 
 	if in.Name != nil {
-		update = update.Set(expression.Name("name"), expression.Value(in.Name))
+		update = update.Set(eventName, expression.Value(in.Name))
 	}
 
 	if in.Description != nil {
-		update = update.Set(expression.Name("description"), expression.Value(in.Description))
+		update = update.Set(eventDescription, expression.Value(in.Description))
 	}
 
 	if in.StartTime != nil {
-		update = update.Set(expression.Name("starts"), expression.Value(in.StartTime.Unix()))
+		update = update.Set(eventStartTime, expression.Value(in.StartTime.Unix()))
 	}
 
 	if in.Duration != nil {
-		update = update.Set(expression.Name("duration"), expression.Value(in.Duration))
+		update = update.Set(eventDuration, expression.Value(in.Duration))
 	}
 
 	expr, err := expression.NewBuilder().WithCondition(cond).WithUpdate(update).Build()
@@ -151,15 +150,12 @@ func UpdateEvent(ctx context.Context, dynamo *dynamodb.Client, in UpdateEventIn)
 	}
 
 	res, err := dynamo.UpdateItem(ctx, &dynamodb.UpdateItemInput{
-		TableName: &in.TableName,
-		Key: map[string]types.AttributeValue{
-			"pk": &types.AttributeValueMemberS{Value: "event"},
-			"sk": &types.AttributeValueMemberS{Value: esox.JoinID("event", in.ID)},
-		},
+		TableName:                 &in.TableName,
+		Key:                       models.GetKey(eventPartitionKey, in.ID),
 		ConditionExpression:       expr.Condition(),
+		UpdateExpression:          expr.Update(),
 		ExpressionAttributeNames:  expr.Names(),
 		ExpressionAttributeValues: expr.Values(),
-		UpdateExpression:          expr.Update(),
 		ReturnValues:              types.ReturnValueAllNew,
 	})
 	if err != nil {
@@ -187,8 +183,10 @@ type ListEventsOut struct {
 }
 
 func ListEvents(ctx context.Context, dynamo *dynamodb.Client, in ListEventsIn) (ListEventsOut, error) {
-	keyCond := expression.KeyEqual(expression.Key("pk"), expression.Value("event")).
-		And(expression.KeyBeginsWith(expression.Key("sk"), "event"))
+	keyCond := expression.KeyEqual(
+		models.PartitionKey,
+		expression.Value(eventPartitionKey),
+	)
 
 	expr, err := expression.NewBuilder().WithKeyCondition(keyCond).Build()
 	if err != nil {

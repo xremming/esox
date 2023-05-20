@@ -99,9 +99,9 @@ func main() {
 	}
 
 	app := esox.App{
+		StaticResources: os.DirFS("./static/"),
 		Routes: map[string]http.Handler{
 			"/":                views.Home(),
-			"/static/":         views.Static(),
 			"/events":          views.EventsList(aws, *flagTableName),
 			"/events/create":   views.EventsCreate(aws, *flagTableName),
 			"/events/update":   views.EventsUpdate(aws, *flagTableName),

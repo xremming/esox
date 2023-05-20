@@ -4,11 +4,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io"
 	"io/fs"
 	"net"
 	"net/http"
 	"os"
 	"os/signal"
+	"strings"
 	"time"
 
 	"github.com/aws/aws-lambda-go/lambdaurl"
@@ -111,8 +113,65 @@ func (a *App) Handler(ctx context.Context) http.Handler {
 	mux := http.NewServeMux()
 	c := a.middleware(*log)
 
+	staticHandler := func(w http.ResponseWriter, r *http.Request) {
+		path := strings.TrimPrefix(r.URL.Path, "/static/")
+		logStatic := log.With().Str("path", r.URL.Path).Logger()
+
+		file, err := a.StaticResources.Open(path)
+		if err != nil {
+			if errors.Is(err, fs.ErrNotExist) {
+				http.NotFound(w, r)
+			} else {
+				logStatic.Err(err).Msg("error opening static resource")
+				http.Error(w, "internal server error", http.StatusInternalServerError)
+			}
+
+			return
+		}
+		defer file.Close()
+
+		var buf [512]byte
+		n, err := file.Read(buf[:])
+		if err != nil && err != io.EOF {
+			logStatic.Err(err).Msg("error reading static resource")
+			http.Error(w, "internal server error", http.StatusInternalServerError)
+			return
+		}
+
+		contentType := ""
+		if strings.HasSuffix(path, ".css") {
+			contentType = "text/css"
+		} else if strings.HasSuffix(path, ".js") {
+			contentType = "application/javascript"
+		} else {
+			contentType = http.DetectContentType(buf[:n])
+		}
+
+		if contentType != "" {
+			w.Header().Set("Content-Type", contentType)
+		}
+
+		_, err = w.Write(buf[:n])
+		if err != nil {
+			logStatic.Err(err).Msg("failed to write head of static resource to response writer")
+			return
+		}
+
+		_, err = io.Copy(w, file)
+		if err != nil {
+			logStatic.Err(err).Msg("failed to copy static resource to response writer")
+			return
+		}
+	}
+
+	mux.Handle("/static/", c.ThenFunc(staticHandler))
+
 	hasRootPath := false
 	for path, handler := range a.Routes {
+		if path == "/static/" {
+			panic("reserved path: /static/")
+		}
+
 		if path == "/" && a.Handler404 != nil {
 			hasRootPath = true
 			mux.Handle(path, c.Append(notFoundMiddleware(a.Handler404)).Then(handler))
@@ -139,6 +198,8 @@ type RunConfig struct {
 	ShutdownTimeout time.Duration
 }
 
+type staticResourcesKey struct{}
+
 func (a *App) Run(ctx context.Context, conf RunConfig) error {
 	log := setupLogger(conf.Dev)
 	ctx = log.WithContext(ctx)
@@ -149,6 +210,8 @@ func (a *App) Run(ctx context.Context, conf RunConfig) error {
 	} else {
 		log.Warn().Msg("CSRF protection disabled")
 	}
+
+	ctx = context.WithValue(ctx, staticResourcesKey{}, a.StaticResources)
 
 	handler := a.Handler(ctx)
 

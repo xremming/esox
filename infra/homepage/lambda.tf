@@ -22,7 +22,7 @@ resource "aws_lambda_function" "homepage" {
   environment {
     variables = {
       TABLE_NAME = aws_dynamodb_table.homepage.name
-      BASE_URL   = "https://abborre${local.base_url_suffix}.remming.org"
+      BASE_URL   = "https://${var.aliases[0]}"
 
       // TODO: get SECRETS, OAUTH_CLIENT_ID and OAUTH_CLIENT_SECRET from AWS Secrets Manager
       SECRETS             = "unsafe-abba1234"

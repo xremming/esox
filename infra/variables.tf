@@ -1,3 +1,5 @@
-output "function_urls" {
-  value = { for env, _ in local.homepage : env => module.homepage[env].function_url }
+variable "domain_name" {
+  type     = string
+  nullable = false
+  default  = "abborre.net"
 }

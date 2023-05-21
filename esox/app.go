@@ -13,6 +13,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/aws/aws-lambda-go/lambdaurl"
 	"github.com/justinas/alice"
 	"github.com/rs/zerolog"
@@ -218,7 +219,7 @@ func (a *App) Run(ctx context.Context, conf RunConfig) error {
 
 	// If AWS_LAMBDA_RUNTIME_API is set, start the Lambda runtime API instead.
 	if _, ok := os.LookupEnv("AWS_LAMBDA_RUNTIME_API"); ok {
-		lambdaurl.Start(handler)
+		lambdaurl.Start(handler, lambda.WithContext(ctx))
 		return nil
 	}
 

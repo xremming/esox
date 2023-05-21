@@ -4,13 +4,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"io"
 	"io/fs"
 	"net"
 	"net/http"
 	"os"
 	"os/signal"
-	"strings"
 	"time"
 
 	"github.com/aws/aws-lambda-go/lambda"
@@ -20,19 +18,6 @@ import (
 	"github.com/rs/zerolog/hlog"
 	"github.com/xremming/abborre/esox/csrf"
 )
-
-func notFoundMiddleware(notFound http.Handler) alice.Constructor {
-	return func(next http.Handler) http.Handler {
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			if r.URL.Path != "/" {
-				notFound.ServeHTTP(w, r)
-				return
-			}
-
-			next.ServeHTTP(w, r)
-		})
-	}
-}
 
 type XFrameOptions string
 
@@ -56,6 +41,7 @@ var DefaultSecurity = Security{
 
 type App struct {
 	BaseURL         string
+	Location        *time.Location
 	StaticResources fs.FS
 	Routes          map[string]http.Handler
 	Handler404      http.Handler
@@ -115,57 +101,6 @@ func (a *App) Handler(ctx context.Context) http.Handler {
 	mux := http.NewServeMux()
 	c := a.middleware(*log)
 
-	staticHandler := func(w http.ResponseWriter, r *http.Request) {
-		path := strings.TrimPrefix(r.URL.Path, "/static/")
-		logStatic := log.With().Str("path", r.URL.Path).Logger()
-
-		file, err := a.StaticResources.Open(path)
-		if err != nil {
-			if errors.Is(err, fs.ErrNotExist) {
-				http.NotFound(w, r)
-			} else {
-				logStatic.Err(err).Msg("error opening static resource")
-				http.Error(w, "internal server error", http.StatusInternalServerError)
-			}
-
-			return
-		}
-		defer file.Close()
-
-		var buf [512]byte
-		n, err := file.Read(buf[:])
-		if err != nil && err != io.EOF {
-			logStatic.Err(err).Msg("error reading static resource")
-			http.Error(w, "internal server error", http.StatusInternalServerError)
-			return
-		}
-
-		contentType := ""
-		if strings.HasSuffix(path, ".css") {
-			contentType = "text/css"
-		} else if strings.HasSuffix(path, ".js") {
-			contentType = "application/javascript"
-		} else {
-			contentType = http.DetectContentType(buf[:n])
-		}
-
-		if contentType != "" {
-			w.Header().Set("Content-Type", contentType)
-		}
-
-		_, err = w.Write(buf[:n])
-		if err != nil {
-			logStatic.Err(err).Msg("failed to write head of static resource to response writer")
-			return
-		}
-
-		_, err = io.Copy(w, file)
-		if err != nil {
-			logStatic.Err(err).Msg("failed to copy static resource to response writer")
-			return
-		}
-	}
-
 	mux.Handle("/static/", c.ThenFunc(staticHandler))
 
 	hasRootPath := false
@@ -200,10 +135,7 @@ type RunConfig struct {
 	ShutdownTimeout time.Duration
 }
 
-type staticResourcesKey struct{}
-
-func (a *App) Run(ctx context.Context, conf RunConfig) error {
-	log := setupLogger(conf.Dev)
+func (a *App) setupCtx(ctx context.Context, log zerolog.Logger) context.Context {
 	ctx = log.WithContext(ctx)
 
 	if a.CSRF != nil {
@@ -213,7 +145,20 @@ func (a *App) Run(ctx context.Context, conf RunConfig) error {
 		log.Warn().Msg("CSRF protection disabled")
 	}
 
+	if a.Location != nil {
+		ctx = context.WithValue(ctx, locationKey{}, a.Location)
+	} else {
+		ctx = context.WithValue(ctx, locationKey{}, time.UTC)
+	}
+
 	ctx = context.WithValue(ctx, staticResourcesKey{}, a.StaticResources)
+
+	return ctx
+}
+
+func (a *App) Run(ctx context.Context, conf RunConfig) error {
+	log := setupLogger(conf.Dev)
+	ctx = a.setupCtx(ctx, log)
 
 	handler := a.Handler(ctx)
 

@@ -116,9 +116,10 @@ func sha256sum(file io.Reader) (string, error) {
 }
 
 func (p *Page) Funcs(ctx context.Context) template.FuncMap {
-	staticResources := ctx.Value(staticResourcesKey{}).(fs.FS)
+	staticResources := GetStaticResources(ctx)
+	location := GetLocation(ctx)
 
-	now := time.Now().UTC()
+	now := time.Now().In(location)
 	return template.FuncMap{
 		"now": func() time.Time {
 			return now

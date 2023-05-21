@@ -39,9 +39,8 @@ type HiddenConfig struct {
 }
 
 type DateTimeLocalConfig struct {
-	Min      time.Time
-	Max      time.Time
-	Location string
+	Min time.Time
+	Max time.Time
 }
 
 type OptionConfig struct {

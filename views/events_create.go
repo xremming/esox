@@ -31,7 +31,6 @@ func EventsCreate(cfg aws.Config, tableName string) http.HandlerFunc {
 		Field("startTime", forms.FieldBuilder[forms.DateTimeLocalConfig]{
 			Label:    "Start Time",
 			Required: true,
-			Config:   forms.DateTimeLocalConfig{Location: "Europe/Helsinki"},
 		}).
 		Field("duration", forms.FieldBuilder[forms.SelectConfig]{
 			Label:    "Duration",

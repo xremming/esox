@@ -52,7 +52,7 @@ func Key[PK, SK KeyType](pk PK, sk SK) map[string]types.AttributeValue {
 }
 
 func NewBase[PK, SK KeyType](pk PK, sk SK) Base[PK, SK] {
-	now := time.Now().UTC()
+	now := time.Now()
 	return Base[PK, SK]{
 		PartitionKey: pk,
 		SortKey:      sk,
@@ -72,11 +72,11 @@ func UpdateBuilder(now time.Time) expression.UpdateBuilder {
 	update := expression.UpdateBuilder{}
 
 	update = update.Set(NameCreated,
-		expression.IfNotExists(NameCreated, expression.Value(now.UTC().Unix())),
+		expression.IfNotExists(NameCreated, expression.Value(now.Unix())),
 	)
 
 	update = update.Set(NameUpdated,
-		expression.Value(now.UTC().Unix()),
+		expression.Value(now.Unix()),
 	)
 
 	update = update.Set(NameVersion,
@@ -92,7 +92,7 @@ func UpdateBuilder(now time.Time) expression.UpdateBuilder {
 func UpdateTTL(update expression.UpdateBuilder, ttl *time.Time) expression.UpdateBuilder {
 	if ttl != nil {
 		return update.Set(NameTimeToLive,
-			expression.Value(ttl.UTC().Unix()),
+			expression.Value(ttl.Unix()),
 		)
 	} else {
 		return update.Remove(NameTimeToLive)

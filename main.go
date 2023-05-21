@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"os"
 	"time"
+	_ "time/tzdata"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
@@ -82,8 +83,14 @@ func main() {
 		Scopes:      []string{"identify", "email", "guilds.join"},
 	}
 
+	location, err := time.LoadLocation("Europe/Helsinki")
+	if err != nil {
+		panic(err)
+	}
+
 	app := esox.App{
 		BaseURL:         cfg.BaseURL,
+		Location:        location,
 		StaticResources: os.DirFS("./static/"),
 		Routes: map[string]http.Handler{
 			"/":                    views.Home(),

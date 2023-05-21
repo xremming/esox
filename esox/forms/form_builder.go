@@ -7,9 +7,9 @@ import (
 	"net/url"
 	"strings"
 	"time"
-	_ "time/tzdata"
 
 	"github.com/rs/zerolog"
+	"github.com/xremming/abborre/esox"
 	"github.com/xremming/abborre/esox/csrf"
 )
 
@@ -207,16 +207,11 @@ func (f FormBuilder) parse(ctx context.Context, form url.Values, prefilling bool
 				err error
 			)
 
-			if c.Location == "" {
+			if prefilling {
 				v, err = time.Parse(FormatDatetimeLocal, value)
 			} else {
-				location, errLocation := time.LoadLocation(c.Location)
-				if errLocation != nil {
-					log.Err(errLocation).Str("location", c.Location).Msg("invalid location")
-					field.Errors = append(field.Errors, "Invalid location.")
-				} else {
-					v, err = time.ParseInLocation(FormatDatetimeLocal, value, location)
-				}
+				location := esox.GetLocation(ctx)
+				v, err = time.ParseInLocation(FormatDatetimeLocal, value, location)
 			}
 
 			if err != nil {
@@ -231,7 +226,7 @@ func (f FormBuilder) parse(ctx context.Context, form url.Values, prefilling bool
 				}
 			}
 
-			data[name] = v
+			data[name] = v.UTC()
 
 		case KindSelect:
 			c := field.Config.(SelectConfig)

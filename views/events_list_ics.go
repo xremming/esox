@@ -30,8 +30,10 @@ func EventsListICS(cfg aws.Config, tableName string) http.HandlerFunc {
 			ev.SetCreatedTime(event.Created)
 			ev.SetModifiedAt(event.Updated)
 
+			// TODO: add a location field to the event
+			// ev.SetLocation()
 			ev.SetDtStampTime(event.StartTime)
-			ev.SetStartAt(event.StartTime)
+			ev.SetStartAt(event.StartTime, ics.WithValue("Europe/Helsinki"))
 			ev.SetDuration(event.Duration)
 
 			ev.SetSummary(event.Name)

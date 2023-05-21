@@ -111,17 +111,10 @@ func EventsUpdate(cfg aws.Config, tableName string) http.HandlerFunc {
 			return
 		}
 
-		location, err := time.LoadLocation("Europe/Helsinki")
-		if err != nil {
-			log.Err(err).Str("location", "Europe/Helsinki").Msg("Failed to load location")
-			renderError(w, r, 500, "Something went wrong, please try again.")
-			return
-		}
-
 		form := updateEventForm.Prefilled(r.Context(), url.Values{
 			"name":        {eventOut.Event.Name},
 			"description": {eventOut.Event.Description},
-			"startTime":   {eventOut.Event.StartTime.In(location).Format(forms.FormatDatetimeLocal)},
+			"startTime":   {eventOut.Event.StartTime.Format(forms.FormatDatetimeLocal)},
 			"duration":    {eventOut.Event.Duration.String()},
 		})
 

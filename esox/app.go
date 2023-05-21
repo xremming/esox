@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strings"
 	"time"
 
 	"github.com/aws/aws-lambda-go/lambda"
@@ -43,7 +44,7 @@ type App struct {
 	BaseURL         string
 	Location        *time.Location
 	StaticResources fs.FS
-	Routes          map[string]http.Handler
+	URLs            URLs
 	Handler404      http.Handler
 	CSRF            *csrf.CSRF
 	Security        *Security
@@ -104,21 +105,28 @@ func (a *App) Handler(ctx context.Context) http.Handler {
 	mux.Handle("/static/", c.ThenFunc(staticHandler))
 
 	hasRootPath := false
-	for path, handler := range a.Routes {
-		if path == "/static/" {
-			panic("reserved path: /static/")
+	for _, url := range a.URLs {
+		if strings.HasPrefix(url.Path, "/static/") {
+			log.Fatal().
+				Str("name", url.Name).
+				Str("path", url.Path).
+				Msg("URL path cannot start with /static/")
 		}
 
-		if path == "/" && a.Handler404 != nil {
+		if url.Path == "/" && a.Handler404 != nil {
 			hasRootPath = true
-			mux.Handle(path, c.Append(notFoundMiddleware(a.Handler404)).Then(handler))
+			mux.Handle(
+				url.Path,
+				c.Append(notFoundMiddleware(a.Handler404)).
+					Then(url.Handler),
+			)
 		} else {
-			mux.Handle(path, c.Then(handler))
+			mux.Handle(url.Path, c.Then(url.Handler))
 		}
 	}
 
 	if !hasRootPath && a.Handler404 != nil {
-		mux.Handle("/", c.Append(notFoundMiddleware(a.Handler404)).Then(http.NotFoundHandler()))
+		mux.Handle("/", c.Then(a.Handler404))
 	}
 
 	return mux
@@ -150,6 +158,20 @@ func (a *App) setupCtx(ctx context.Context, log zerolog.Logger) context.Context 
 	} else {
 		ctx = context.WithValue(ctx, locationKey{}, time.UTC)
 	}
+
+	nameMapping := make(map[string]URL, len(a.URLs))
+	for _, url := range a.URLs {
+		oldURL, ok := nameMapping[url.Name]
+		if ok {
+			log.Warn().
+				Str("oldPath", oldURL.Path).
+				Str("newPath", url.Path).
+				Msg("URL name collision")
+		}
+
+		nameMapping[url.Name] = url
+	}
+	ctx = context.WithValue(ctx, nameMappingKey{}, nameMapping)
 
 	ctx = context.WithValue(ctx, staticResourcesKey{}, a.StaticResources)
 

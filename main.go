@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"net/http"
 	"os"
 	"time"
 	_ "time/tzdata"
@@ -92,16 +91,8 @@ func main() {
 		BaseURL:         cfg.BaseURL,
 		Location:        location,
 		StaticResources: os.DirFS("./static/"),
-		Routes: map[string]http.Handler{
-			"/":                    views.Home(),
-			"/events":              views.EventsList(aws, cfg.TableName),
-			"/events/calendar":     views.EventsListICS(aws, cfg.TableName),
-			"/admin/events/create": views.EventsCreate(aws, cfg.TableName),
-			"/admin/events/update": views.EventsUpdate(aws, cfg.TableName),
-			"/discord/login":       views.DiscordLogin(oAuth2Config),
-			"/discord/callback":    views.DiscordCallback(oAuth2Config),
-		},
-		Handler404: views.NotFound(),
+		URLs:            views.URLs(aws, cfg.TableName, oAuth2Config),
+		Handler404:      views.NotFound(),
 		CSRF: &csrf.CSRF{
 			Secrets: cfg.Secrets,
 		},

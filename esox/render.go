@@ -116,13 +116,10 @@ func sha256sum(file io.Reader) (string, error) {
 }
 
 func (p *Page) Funcs(ctx context.Context) template.FuncMap {
-	staticResources := GetStaticResources(ctx)
-	location := GetLocation(ctx)
-
-	now := time.Now().In(location)
 	return template.FuncMap{
 		"now": func() time.Time {
-			return now
+			location := GetLocation(ctx)
+			return time.Now().In(location)
 		},
 		"time": func(t time.Time, value string) template.HTML {
 			return template.HTML(fmt.Sprintf(
@@ -135,6 +132,8 @@ func (p *Page) Funcs(ctx context.Context) template.FuncMap {
 			return t.Format(layout)
 		},
 		"stylesheet": func(name string) (template.HTML, error) {
+			staticResources := GetStaticResources(ctx)
+
 			file, err := staticResources.Open(name)
 			if err != nil {
 				return "", err
@@ -151,6 +150,8 @@ func (p *Page) Funcs(ctx context.Context) template.FuncMap {
 			)), nil
 		},
 		"javascript": func(name string) (template.HTML, error) {
+			staticResources := GetStaticResources(ctx)
+
 			file, err := staticResources.Open(name)
 			if err != nil {
 				return "", err
@@ -165,6 +166,15 @@ func (p *Page) Funcs(ctx context.Context) template.FuncMap {
 				`<script async src="/static/%s" integrity="%s"></script>`,
 				name, hash,
 			)), nil
+		},
+		"urlFor": func(name string) (string, error) {
+			nameMapping := GetNameMapping(ctx)
+			url, ok := nameMapping[name]
+			if !ok {
+				return "", fmt.Errorf("unknown route name: %s", name)
+			}
+
+			return url.Path, nil
 		},
 	}
 }

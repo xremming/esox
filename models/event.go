@@ -90,7 +90,7 @@ type GetEventOut struct {
 func GetEvent(ctx context.Context, dynamo *dynamodb.Client, in GetEventIn) (GetEventOut, error) {
 	out, err := dynamo.GetItem(ctx, &dynamodb.GetItemInput{
 		TableName: &in.TableName,
-		Key:       models.GetKey(eventPartitionKey, in.ID),
+		Key:       models.Key(eventPartitionKey, in.ID),
 	})
 	if err != nil {
 		return GetEventOut{}, err
@@ -151,7 +151,7 @@ func UpdateEvent(ctx context.Context, dynamo *dynamodb.Client, in UpdateEventIn)
 
 	res, err := dynamo.UpdateItem(ctx, &dynamodb.UpdateItemInput{
 		TableName:                 &in.TableName,
-		Key:                       models.GetKey(eventPartitionKey, in.ID),
+		Key:                       models.Key(eventPartitionKey, in.ID),
 		ConditionExpression:       expr.Condition(),
 		UpdateExpression:          expr.Update(),
 		ExpressionAttributeNames:  expr.Names(),

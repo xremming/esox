@@ -8,17 +8,21 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 )
 
-type Key interface {
+type KeyType interface {
 	~string | ID | NSID
 }
 
-type Base[PK, SK Key] struct {
+type Base[PK, SK KeyType] struct {
 	PartitionKey PK         `dynamodbav:"pk"`
 	SortKey      SK         `dynamodbav:"sk"`
 	Created      time.Time  `dynamodbav:"created,unixtime"`
 	Updated      time.Time  `dynamodbav:"updated,unixtime"`
 	Version      int        `dynamodbav:"version"`
 	TimeToLive   *time.Time `dynamodbav:"ttl,unixtime,omitempty"`
+}
+
+func (b Base[PK, SK]) Key() map[string]types.AttributeValue {
+	return Key(b.PartitionKey, b.SortKey)
 }
 
 var (
@@ -35,7 +39,7 @@ var (
 	NameTimeToLive   = expression.Name("ttl")
 )
 
-func GetKey[PK, SK Key](pk PK, sk SK) map[string]types.AttributeValue {
+func Key[PK, SK KeyType](pk PK, sk SK) map[string]types.AttributeValue {
 	out, err := attributevalue.MarshalMap(map[string]any{
 		"pk": &pk,
 		"sk": &sk,
@@ -47,7 +51,7 @@ func GetKey[PK, SK Key](pk PK, sk SK) map[string]types.AttributeValue {
 	return out
 }
 
-func NewBase[PK, SK Key](pk PK, sk SK) Base[PK, SK] {
+func NewBase[PK, SK KeyType](pk PK, sk SK) Base[PK, SK] {
 	now := time.Now().UTC()
 	return Base[PK, SK]{
 		PartitionKey: pk,
@@ -58,7 +62,7 @@ func NewBase[PK, SK Key](pk PK, sk SK) Base[PK, SK] {
 	}
 }
 
-func NewBaseWithTTL[PK, SK Key](pk PK, sk SK, ttl time.Time) Base[PK, SK] {
+func NewBaseWithTTL[PK, SK KeyType](pk PK, sk SK, ttl time.Time) Base[PK, SK] {
 	out := NewBase(pk, sk)
 	out.TimeToLive = &ttl
 	return out

@@ -98,6 +98,11 @@ func main() {
 		CSRF: &csrf.CSRF{
 			Secrets: cfg.Secrets,
 		},
+		Security: &esox.Security{
+			XFrameOptions: esox.XFrameOptionsDeny,
+			NoSniff:       true,
+			CSP:           "default-src 'self'; img-src 'self' https://cdn.discordapp.com/",
+		},
 	}
 
 	err = app.Run(ctx, esox.RunConfig{

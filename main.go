@@ -86,7 +86,7 @@ func main() {
 	auth := esox.BasicAuth("admin", cfg.AdminPassword)
 
 	app := esox.App{
-		BaseURL:         "http://localhost:3000",
+		BaseURL:         cfg.BaseURL,
 		StaticResources: os.DirFS("./static/"),
 		Routes: map[string]http.Handler{
 			"/":                    views.Home(),

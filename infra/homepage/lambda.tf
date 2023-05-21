@@ -28,9 +28,6 @@ resource "aws_lambda_function" "homepage" {
       SECRETS             = "unsafe-abba1234"
       OAUTH_CLIENT_ID     = ""
       OAUTH_CLIENT_SECRET = ""
-
-      // TODO: remove once discord login is in place
-      ADMIN_PASSWORD = "maximilian94"
     }
   }
 

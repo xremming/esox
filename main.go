@@ -22,7 +22,6 @@ type Config struct {
 	Host              string   `env:"HOST" default:"localhost"`
 	Port              int      `env:"PORT" default:"8000"`
 	TableName         string   `env:"TABLE_NAME,required"`
-	AdminPassword     string   `env:"ADMIN_PASSWORD,required"`
 	BaseURL           string   `env:"BASE_URL,required"`
 	Secrets           []string `env:"SECRETS,required"`
 	OAuthClientID     string   `env:"OAUTH_CLIENT_ID,required"`
@@ -83,8 +82,6 @@ func main() {
 		Scopes:      []string{"identify", "email", "guilds.join"},
 	}
 
-	auth := esox.BasicAuth("admin", cfg.AdminPassword)
-
 	app := esox.App{
 		BaseURL:         cfg.BaseURL,
 		StaticResources: os.DirFS("./static/"),
@@ -92,8 +89,8 @@ func main() {
 			"/":                    views.Home(),
 			"/events":              views.EventsList(aws, cfg.TableName),
 			"/events/calendar":     views.EventsListICS(aws, cfg.TableName),
-			"/admin/events/create": auth(views.EventsCreate(aws, cfg.TableName)),
-			"/admin/events/update": auth(views.EventsUpdate(aws, cfg.TableName)),
+			"/admin/events/create": views.EventsCreate(aws, cfg.TableName),
+			"/admin/events/update": views.EventsUpdate(aws, cfg.TableName),
 			"/discord/login":       views.DiscordLogin(oAuth2Config),
 			"/discord/callback":    views.DiscordCallback(oAuth2Config),
 		},

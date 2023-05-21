@@ -173,8 +173,6 @@ func (a *App) setupCtx(ctx context.Context, log zerolog.Logger) context.Context 
 	}
 	ctx = context.WithValue(ctx, nameMappingKey{}, nameMapping)
 
-	ctx = context.WithValue(ctx, staticResourcesKey{}, a.StaticResources)
-
 	return ctx
 }
 

@@ -2,8 +2,6 @@ package esox
 
 import (
 	"context"
-	"crypto/sha256"
-	"encoding/base64"
 	"fmt"
 	"html/template"
 	"io"
@@ -24,10 +22,7 @@ type Template struct {
 	childTemplate string
 }
 
-const (
-	TemplatesPrefix = "templates"
-	StaticPrefix    = "static"
-)
+const TemplatesPrefix = "templates"
 
 func GetTemplate(name, baseName string) *Template {
 	out := Template{name: name, baseName: baseName}
@@ -99,18 +94,6 @@ type RenderData interface {
 	SetFlashes(flashes []flash.Data)
 }
 
-func sha256sum(file io.Reader) (string, error) {
-	hash := sha256.New()
-
-	_, err := io.Copy(hash, file)
-	if err != nil {
-		return "", err
-	}
-
-	sum := hash.Sum(nil)
-	return fmt.Sprintf("sha256-%s", base64.StdEncoding.EncodeToString(sum)), nil
-}
-
 func (t *Template) funcs(ctx context.Context) template.FuncMap {
 	return template.FuncMap{
 		"now": func() time.Time {
@@ -158,39 +141,27 @@ func (t *Template) funcs(ctx context.Context) template.FuncMap {
 			return template.HTML(buf.String()), nil
 		},
 		"stylesheet": func(name string) (template.HTML, error) {
-			staticResources := GetStaticResources(ctx)
-
-			file, err := staticResources.Open(name)
+			file, err := GetStaticFile(name)
 			if err != nil {
 				return "", err
 			}
-
-			hash, err := sha256sum(file)
-			if err != nil {
-				return "", err
-			}
+			defer file.Close()
 
 			return template.HTML(fmt.Sprintf(
 				`<link rel="stylesheet" href="/static/%s" integrity="%s">`,
-				name, hash,
+				template.HTMLEscapeString(file.PathWithHash), file.Integrity,
 			)), nil
 		},
 		"javascript": func(name string) (template.HTML, error) {
-			staticResources := GetStaticResources(ctx)
-
-			file, err := staticResources.Open(name)
+			file, err := GetStaticFile(name)
 			if err != nil {
 				return "", err
 			}
-
-			hash, err := sha256sum(file)
-			if err != nil {
-				return "", err
-			}
+			defer file.Close()
 
 			return template.HTML(fmt.Sprintf(
-				`<script async src="/static/%s" integrity="%s"></script>`,
-				name, hash,
+				`<script src="/static/%s" integrity="%s" async></script>`,
+				template.HTMLEscapeString(file.PathWithHash), file.Integrity,
 			)), nil
 		},
 		"urlFor": func(name string) (string, error) {

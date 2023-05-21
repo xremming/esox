@@ -15,7 +15,7 @@ import (
 	"github.com/xremming/abborre/models"
 )
 
-var eventsUpdateTmpl = renderer.GetTemplate("events_update.html", "base.html")
+var eventsUpdateTmpl = esox.GetTemplate("events_update.html", "base.html")
 
 func EventsUpdate(cfg aws.Config, tableName string) http.HandlerFunc {
 	dynamo := dynamodb.NewFromConfig(cfg)
@@ -52,13 +52,13 @@ func EventsUpdate(cfg aws.Config, tableName string) http.HandlerFunc {
 			err := r.ParseForm()
 			if err != nil {
 				flash.Warning(r, "Something went wrong, please try again.")
-				eventsUpdateTmpl.Render(w, r, 400, &data{Nav: defaultNavItems, Form: updateEventForm.Empty(r.Context())})
+				eventsUpdateTmpl.Render(w, r, 400, &data{Form: updateEventForm.Empty(r.Context())})
 				return
 			}
 
 			form, parsedForm := updateEventForm.Parse(r.Context(), r.Form)
 			if form.HasErrors() {
-				eventsUpdateTmpl.Render(w, r, 400, &data{Nav: defaultNavItems, Form: form})
+				eventsUpdateTmpl.Render(w, r, 400, &data{Form: form})
 				return
 			}
 
@@ -106,7 +106,6 @@ func EventsUpdate(cfg aws.Config, tableName string) http.HandlerFunc {
 
 			flash.Warning(r, "Something went wrong, please try again.")
 			eventsUpdateTmpl.Render(w, r, 400, &data{
-				Nav:  defaultNavItems,
 				Form: updateEventForm.Empty(r.Context()),
 			})
 			return
@@ -126,6 +125,6 @@ func EventsUpdate(cfg aws.Config, tableName string) http.HandlerFunc {
 			"duration":    {eventOut.Event.Duration.String()},
 		})
 
-		eventsUpdateTmpl.Render(w, r, 200, &data{Nav: defaultNavItems, Form: form})
+		eventsUpdateTmpl.Render(w, r, 200, &data{Form: form})
 	}
 }

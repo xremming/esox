@@ -13,7 +13,7 @@ import (
 	"github.com/xremming/abborre/models"
 )
 
-var eventsCreateTmpl = renderer.GetTemplate("events_create.html", "base.html")
+var eventsCreateTmpl = esox.GetTemplate("events_create.html", "base.html")
 
 func EventsCreate(cfg aws.Config, tableName string) http.HandlerFunc {
 	dynamo := dynamodb.NewFromConfig(cfg)
@@ -59,7 +59,7 @@ func EventsCreate(cfg aws.Config, tableName string) http.HandlerFunc {
 			err := r.ParseForm()
 			if err != nil {
 				flash.Warning(r, "Something went wrong, please try again.")
-				eventsCreateTmpl.Render(w, r, 400, &data{Nav: defaultNavItems, Form: createEventForm.Empty(r.Context())})
+				eventsCreateTmpl.Render(w, r, 400, &data{Form: createEventForm.Empty(r.Context())})
 				return
 			}
 
@@ -70,7 +70,7 @@ func EventsCreate(cfg aws.Config, tableName string) http.HandlerFunc {
 					Msg("parsed form has errors")
 
 				flash.Error(r, "Failed to create new event.")
-				eventsCreateTmpl.Render(w, r, 400, &data{Nav: defaultNavItems, Form: form})
+				eventsCreateTmpl.Render(w, r, 400, &data{Form: form})
 				return
 			}
 
@@ -93,14 +93,14 @@ func EventsCreate(cfg aws.Config, tableName string) http.HandlerFunc {
 			if err != nil {
 				log.Err(err).Msg("Failed to create event")
 				flash.Error(r, "Failed to create event.")
-				eventsCreateTmpl.Render(w, r, 500, &data{Nav: defaultNavItems, Form: form})
+				eventsCreateTmpl.Render(w, r, 500, &data{Form: form})
 				return
 			}
 
 			flash.Info(r, "Event created.")
 			esox.Redirect(w, r, "/events", http.StatusFound)
 		} else {
-			eventsCreateTmpl.Render(w, r, 200, &data{Nav: defaultNavItems, Form: createEventForm.Empty(r.Context())})
+			eventsCreateTmpl.Render(w, r, 200, &data{Form: createEventForm.Empty(r.Context())})
 		}
 	}
 }

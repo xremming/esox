@@ -8,10 +8,11 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"github.com/rs/zerolog/hlog"
+	"github.com/xremming/abborre/esox"
 	"github.com/xremming/abborre/models"
 )
 
-var eventsListTmpl = renderer.GetTemplate("events_list.html", "base.html")
+var eventsListTmpl = esox.GetTemplate("events_list.html", "base.html")
 
 func EventsList(cfg aws.Config, tableName string) http.HandlerFunc {
 	dynamo := dynamodb.NewFromConfig(cfg)
@@ -49,6 +50,6 @@ func EventsList(cfg aws.Config, tableName string) http.HandlerFunc {
 			}
 		}
 
-		eventsListTmpl.Render(w, r, 200, &data{Nav: defaultNavItems, Data: items})
+		eventsListTmpl.Render(w, r, 200, &data{Data: items})
 	}
 }

@@ -22,9 +22,7 @@
     </header>
 
     <nav class="base__nav">
-      {{ range .Nav }}
-      <a href="{{ .URL }}">{{ .Name }}</a>
-      {{ end }}
+      {{ partial "partials/nav.html" nil }}
     </nav>
 
     <main class="base__main">

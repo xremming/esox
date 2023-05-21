@@ -2,7 +2,6 @@ package views
 
 import (
 	"net/http"
-	"os"
 
 	"github.com/rs/zerolog/hlog"
 	"github.com/xremming/abborre/esox"
@@ -10,23 +9,10 @@ import (
 	"github.com/xremming/abborre/esox/forms"
 )
 
-type navItem struct {
-	Name string
-	URL  string
-}
-
-var defaultNavItems = []navItem{
-	{Name: "Home", URL: "/"},
-	{Name: "Events", URL: "/events"},
-	{Name: "Create Event", URL: "/admin/events/create"},
-	{Name: "Login", URL: "/discord/login"},
-}
-
 type data struct {
 	Title       string
 	Description string
 	Flashes     []flash.Data
-	Nav         []navItem
 	Form        forms.Form
 	Data        any
 }
@@ -35,12 +21,7 @@ func (d *data) SetFlashes(flashes []flash.Data) {
 	d.Flashes = flashes
 }
 
-var (
-	templates = os.DirFS(".")
-	renderer  = esox.NewRenderer(templates, "templates")
-)
-
-var errorTmpl = renderer.GetTemplate("error.html", "base.html")
+var errorTmpl = esox.GetTemplate("error.html", "base.html")
 
 type renderErrorData struct {
 	StatusCode   int

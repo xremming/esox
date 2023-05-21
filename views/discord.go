@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/rs/zerolog"
+	"github.com/xremming/abborre/esox"
 	"github.com/xremming/abborre/esox/csrf"
 	"golang.org/x/oauth2"
 )
@@ -31,7 +32,7 @@ type DiscordUser struct {
 	Verified bool    `json:"verified"`
 }
 
-var loginFailureTmpl = renderer.GetTemplate("login_failure.html", "base.html")
+var loginFailureTmpl = esox.GetTemplate("login_failure.html", "base.html")
 
 func DiscordCallback(oauth2Config oauth2.Config) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -79,7 +80,6 @@ func DiscordCallback(oauth2Config oauth2.Config) http.HandlerFunc {
 		if !user.Verified {
 			logWithDiscordUser.Warn().Msg("user is not verified")
 			loginFailureTmpl.Render(w, r, 400, &data{
-				Nav:  defaultNavItems,
 				Data: "You must verify your Discord email address before you can log in.",
 			})
 			return

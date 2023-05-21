@@ -7,8 +7,8 @@ import (
 	"fmt"
 	"html/template"
 	"io"
-	"io/fs"
 	"net/http"
+	"os"
 	"path/filepath"
 	"time"
 
@@ -17,32 +17,28 @@ import (
 	"github.com/xremming/abborre/esox/utils"
 )
 
-type Renderer struct {
-	fs     fs.FS
-	prefix string
-}
-
-func NewRenderer(fs fs.FS, prefix string) *Renderer {
-	return &Renderer{fs, prefix}
-}
-
-type Page struct {
-	baseTemplate  string
-	baseName      string
+type Template struct {
 	name          string
+	baseName      string
+	baseTemplate  string
 	childTemplate string
 }
 
-func (re *Renderer) GetTemplate(name, baseName string) *Page {
-	out := Page{name: name, baseName: baseName}
+const (
+	TemplatesPrefix = "templates"
+	StaticPrefix    = "static"
+)
 
-	baseFile, err := re.fs.Open(filepath.Join(re.prefix, baseName))
+func GetTemplate(name, baseName string) *Template {
+	out := Template{name: name, baseName: baseName}
+
+	baseFile, err := os.Open(filepath.Join(TemplatesPrefix, baseName))
 	if err != nil {
 		panic(err)
 	}
 	defer baseFile.Close()
 
-	childFile, err := re.fs.Open(filepath.Join(re.prefix, name))
+	childFile, err := os.Open(filepath.Join(TemplatesPrefix, name))
 	if err != nil {
 		panic(err)
 	}
@@ -115,7 +111,7 @@ func sha256sum(file io.Reader) (string, error) {
 	return fmt.Sprintf("sha256-%s", base64.StdEncoding.EncodeToString(sum)), nil
 }
 
-func (p *Page) Funcs(ctx context.Context) template.FuncMap {
+func (t *Template) funcs(ctx context.Context) template.FuncMap {
 	return template.FuncMap{
 		"now": func() time.Time {
 			location := GetLocation(ctx)
@@ -130,6 +126,36 @@ func (p *Page) Funcs(ctx context.Context) template.FuncMap {
 		},
 		"formatTime": func(layout string, t time.Time) string {
 			return t.Format(layout)
+		},
+		"partial": func(name string, data interface{}) (template.HTML, error) {
+			file, err := os.Open(filepath.Join(TemplatesPrefix, name))
+			if err != nil {
+				return "", err
+			}
+			defer file.Close()
+
+			buf := utils.GetBytesBuffer()
+			defer utils.PutBytesBuffer(buf)
+
+			_, err = io.Copy(buf, file)
+			if err != nil {
+				return "", err
+			}
+
+			tmpl, err := template.New(name).Funcs(t.funcs(ctx)).Parse(buf.String())
+			if err != nil {
+				return "", err
+			}
+
+			// reuse the buffer for the output
+			buf.Reset()
+
+			err = tmpl.Execute(buf, data)
+			if err != nil {
+				return "", err
+			}
+
+			return template.HTML(buf.String()), nil
 		},
 		"stylesheet": func(name string) (template.HTML, error) {
 			staticResources := GetStaticResources(ctx)
@@ -179,10 +205,10 @@ func (p *Page) Funcs(ctx context.Context) template.FuncMap {
 	}
 }
 
-func (p *Page) Render(w http.ResponseWriter, r *http.Request, code int, data RenderData) {
+func (t *Template) Render(w http.ResponseWriter, r *http.Request, code int, data RenderData) {
 	log := hlog.FromRequest(r).With().
 		Int("code", code).
-		Str("template", p.name).
+		Str("template", t.name).
 		Interface("data", data).
 		Logger()
 
@@ -190,16 +216,16 @@ func (p *Page) Render(w http.ResponseWriter, r *http.Request, code int, data Ren
 	setFlashCookie(w, r, false, flashes)
 	data.SetFlashes(flashes)
 
-	tmpl, err := template.New(p.baseName).
-		Funcs(p.Funcs(r.Context())).
-		Parse(p.baseTemplate)
+	tmpl, err := template.New(t.baseName).
+		Funcs(t.funcs(r.Context())).
+		Parse(t.baseTemplate)
 	if err != nil {
 		log.Error().Err(err).Msg("failed to parse base template")
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
 	}
 
-	tmpl, err = tmpl.Parse(p.childTemplate)
+	tmpl, err = tmpl.Parse(t.childTemplate)
 	if err != nil {
 		log.Error().Err(err).Msg("failed to parse child template")
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)

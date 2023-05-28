@@ -99,7 +99,7 @@ func main() {
 		Security: &esox.Security{
 			XFrameOptions: esox.XFrameOptionsDeny,
 			NoSniff:       true,
-			CSP:           "default-src 'self'; img-src 'self' https://cdn.discordapp.com/",
+			CSP:           "default-src 'self'; img-src 'self' https://cdn.discordapp.com/; style-src 'self' 'unsafe-inline'",
 		},
 	}
 

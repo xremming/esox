@@ -1,6 +1,6 @@
 {{ define "body" }}
 {{ range .Data }}
-<div>
+<turbo-frame id="event-{{ .ID }}">
   <h2>{{ .Name }} (<a href="{{ urlFor "events.update" }}?id={{ .ID }}">edit</a>)</h2>
   <p>{{ .Description }}</p>
   <ul>
@@ -9,6 +9,6 @@
     <li>Created: {{ .Created }}</li>
     <li>Updated: {{ .Updated }}</li>
   </ul>
-</div>
+</turbo-frame>
 {{ end }}
 {{ end }}

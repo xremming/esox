@@ -6,3 +6,6 @@ abborre-lambda.zip
 
 # terraform
 .terraform
+
+# js
+node_modules

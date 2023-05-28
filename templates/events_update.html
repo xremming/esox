@@ -1,9 +1,11 @@
 {{ define "body" }}
 <h2>update event</h2>
 
-<form method="post" class="form-control">
-  {{ .Form.RenderDiv "form-field" "form-error" }}
-  <input type="submit" value="Update" />
-</form>
+<turbo-frame id="event-{{ .Data.ID }}">
+  <form action="{{ urlFor "events.update" }}?id={{ .Data.ID }}" method="post" class="form-control">
+    {{ .Form.RenderDiv "form-field" "form-error" }}
+    <input type="submit" value="Update" />
+  </form>
+</turbo-frame>
 
 {{ end }}

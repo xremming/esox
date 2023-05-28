@@ -11,10 +11,11 @@
   {{ stylesheet "normalize.css" }}
   {{ stylesheet "base.css" }}
   {{ stylesheet "forms.css" }}
+  {{ javascript "turbo.js" }}
 </head>
 
 <body>
-  <div class="base__content">
+  <turbo-frame id="content" data-turbo-action="advance" class="base__content">
     <header class="base__header">
       <h1 class="base__title">
         <a class="base__title-link" href="/">Abborre Freediving</a>
@@ -37,7 +38,7 @@
       {{ block "body" . }}
       {{ end }}
     </main>
-  </div>
+  </turbo-frame>
 </body>
 
 </html>

@@ -173,6 +173,15 @@ func (t *Template) funcs(ctx context.Context) template.FuncMap {
 
 			return url.Path, nil
 		},
+		"urlForStatic": func(name string) (string, error) {
+			file, err := GetStaticFile(name)
+			if err != nil {
+				return "", err
+			}
+			defer file.Close()
+
+			return fmt.Sprintf("/static/%s", file.PathWithHash), nil
+		},
 	}
 }
 

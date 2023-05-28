@@ -118,6 +118,6 @@ func EventsUpdate(cfg aws.Config, tableName string) http.HandlerFunc {
 			"duration":    {eventOut.Event.Duration.String()},
 		})
 
-		eventsUpdateTmpl.Render(w, r, 200, &data{Form: form})
+		eventsUpdateTmpl.Render(w, r, 200, &data{Form: form, Data: eventOut.Event})
 	}
 }

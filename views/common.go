@@ -10,11 +10,9 @@ import (
 )
 
 type data struct {
-	Title       string
-	Description string
-	Flashes     []flash.Data
-	Form        forms.Form
-	Data        any
+	Flashes []flash.Data
+	Form    forms.Form
+	Data    any
 }
 
 func (d *data) SetFlashes(flashes []flash.Data) {

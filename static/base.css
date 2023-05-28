@@ -3,6 +3,11 @@
     sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
   --monospace: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
     "Courier New", monospace;
+
+  --color-white: #ffffff;
+  --color-black: #000000;
+  --color-blue: #8cdadf;
+  --color-red: #fb016b;
 }
 
 body {
@@ -19,16 +24,32 @@ code {
   display: flex;
   flex-direction: column;
   margin: 0 auto;
-  max-width: 60rem;
+  padding: 0 1rem;
+  max-width: 60em;
+}
+
+@media screen and (max-width: 62em) {
+  .base__content {
+    margin: 0;
+    max-width: none;
+  }
 }
 
 .base__header {
-  background-image: url("https://picsum.photos/1000/1000");
-  background-repeat: no-repeat;
-  background-size: cover;
-  background-position: center;
+  display: flex;
+  flex-direction: row;
+  align-items: baseline;
+  justify-content: space-between;
 
   height: fit-content;
+}
+
+@media screen and (max-width: 40em) {
+  .base__header {
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 1rem;
+  }
 }
 
 .base__title {
@@ -50,13 +71,10 @@ code {
   gap: 1rem;
   justify-content: center;
 
-  border-top: 1px solid black;
-  border-bottom: 1px solid black;
   padding: 0.2rem;
 }
 
 .base__main {
-  padding: 1rem;
 }
 
 .base__flashes {

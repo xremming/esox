@@ -40,6 +40,8 @@ module "homepage" {
 
   source = "./homepage"
 
+  forward_host_arn = aws_cloudfront_function.forward_host.arn
+
   env                 = each.key
   aliases             = each.value.aliases
   cert_arn            = aws_acm_certificate.cert.arn

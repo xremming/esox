@@ -16,7 +16,16 @@ resource "aws_cloudfront_cache_policy" "default" {
     }
 
     headers_config {
-      header_behavior = "none"
+      header_behavior = "whitelist"
+      headers {
+        items = [
+          "User-Agent",
+          "Referer",
+          "X-CSRF-Token",
+          "X-XSRF-Token",
+          "X-Original-Host",
+        ]
+      }
     }
 
     query_strings_config {
@@ -62,6 +71,11 @@ resource "aws_cloudfront_distribution" "default" {
 
   default_cache_behavior {
     target_origin_id = "Default"
+
+    function_association {
+      event_type   = "viewer-request"
+      function_arn = var.forward_host_arn
+    }
 
     viewer_protocol_policy = "redirect-to-https"
     allowed_methods        = ["GET", "HEAD", "OPTIONS", "PUT", "POST", "PATCH", "DELETE"]

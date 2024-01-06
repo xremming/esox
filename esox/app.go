@@ -107,13 +107,25 @@ func (a *App) middleware(log zerolog.Logger) (alice.Chain, error) {
 
 	c = c.Append(func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			hostFromXOriginalHost := false
+			host := r.Header.Get("X-Original-Host")
+			if host != "" {
+				hostFromXOriginalHost = true
+			} else {
+				host = r.Host
+			}
+
 			logger := hlog.FromRequest(r).With().
-				Str("host", r.Host).
+				Str("host", host).
 				Str("base_url", parsedBaseURL.String()).
 				Logger()
 
+			if hostFromXOriginalHost {
+				logger.Debug().Msg("Using Host from X-Original-Host for BaseURL Middleware.")
+			}
+
 			logger.Debug().Msg("Checking if BaseURL Middleware should redirect.")
-			if r.Host == parsedBaseURL.Host {
+			if host == parsedBaseURL.Host {
 				next.ServeHTTP(w, r)
 				return
 			}

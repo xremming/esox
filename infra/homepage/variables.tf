@@ -1,3 +1,8 @@
+variable "forward_host_arn" {
+  type     = string
+  nullable = false
+}
+
 variable "env" {
   type     = string
   nullable = false

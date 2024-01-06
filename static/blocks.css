@@ -1,84 +1,45 @@
-/* --- BLOCK HEIGHT --- */
-
-.block__height-full {
-  min-height: 100vh;
+.blocks > *:not(:last-child) {
+  margin-bottom: var(--padding-l);
 }
 
-.block__height-large {
-  min-height: 40rem;
+/* --- HEIGHT --- */
+
+.height-s {
+  height: 10rem;
 }
 
-.block__height-medium {
-  min-height: 30rem;
+.height-m {
+  height: 15rem;
 }
 
-.block__height-small {
-  min-height: 20rem;
+.height-l {
+  height: 20rem;
 }
 
-.block__height-xsmall {
-  min-height: 10rem;
+/* --- IMAGE --- */
+
+.block__image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
-.block__height-fit {
-  min-height: fit-content;
-}
+/* --- COVER --- */
 
-.block__centered {
+.block__cover {
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-}
-
-/* --- HERO --- */
-
-@media screen and (max-width: 40em) {
-  .block__hero {
-    --padding-left: 1rem;
-  }
-}
-
-.block__hero {
-  position: relative;
-}
-
-.block__hero-title {
-  position: relative;
-  z-index: 2;
-  padding: 2rem 0;
 
   width: 100%;
-  height: fit-content;
-
-  font-size: xx-large;
-  font-weight: 900;
+  height: 15rem;
 }
 
-.block__hero-title h1,
-.block__hero-title h2,
-.block__hero-title h3,
-.block__hero-title h4,
-.block__hero-title h5,
-.block__hero-title h6 {
-  margin: 0;
-}
-
-.block__hero .block__hero-image {
-  z-index: 1;
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: calc(100% - var(--padding-left, 6rem));
-  height: 100%;
-  padding-left: var(--padding-left, 6rem);
-}
-
-.block__hero .block__hero-image img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center;
+.block__cover > * {
+  font-size: 3rem;
+  font-weight: 700;
+  color: var(--color-text-invert);
 }
 
 /* --- COLUMNS --- */

@@ -14,7 +14,7 @@ func URLs(cfg aws.Config, tableName string, oauth2Config oauth2.Config) esox.URL
 	}, {
 		Name:    "story",
 		Handler: Story(),
-		Path:    "/story",
+		Path:    "/tarina",
 	}, {
 		Name:    "events.list",
 		Handler: EventsList(cfg, tableName),

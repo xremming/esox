@@ -12,35 +12,34 @@
   {{ stylesheet "base.css" }}
   {{ stylesheet "blocks.css" }}
   {{ stylesheet "forms.css" }}
-  {{ stylesheet "general.css" }}
   {{ javascript "turbo.js" }}
 </head>
 
 <body>
-  <turbo-frame id="content" data-turbo-action="advance" class="base__content">
-    <header class="base__header">
-      <h2 class="base__title">
-        <a class="base__title-link" href="/">Abborre Freediving</a>
-      </h2>
+  <div class="base__content">
+    <nav class="base__nav">
+      {{ partial "partials/nav.html" nil }}
+    </nav>
 
-      <nav class="base__nav">
-        {{ partial "partials/nav.html" nil }}
-      </nav>
+    <header class="base__header">
+      <h1 class="base__header-title"><a href="/">Abborre Freediving</a></h1>
     </header>
 
     <main class="base__main">
-      {{ if gt (.Flashes | len) 0 }}
-      <div class="base__flashes">
-        {{ range .Flashes }}
-        <div class="base__flash base__flash-{{ .Level }}">{{ .Message }}</div>
+      <turbo-frame id="content" target="_top">
+        {{ if gt (.Flashes | len) 0 }}
+        <div class="base__flashes">
+          {{ range .Flashes }}
+          <div class="base__flash base__flash-{{ .Level }}">{{ .Message }}</div>
+          {{ end }}
+        </div>
         {{ end }}
-      </div>
-      {{ end }}
 
-      {{ block "body" . }}
-      {{ end }}
+        {{ block "body" . }}
+        {{ end }}
+      </turbo-frame>
     </main>
-  </turbo-frame>
+  </div>
 </body>
 
 </html>

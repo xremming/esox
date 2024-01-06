@@ -1,15 +1,18 @@
-{{ define "title" }}Abborre - Story{{ end }}
+{{ define "title" }}Abborre Freediving - Tarina{{ end }}
 
 {{ define "body" }}
 
-<div class="block__hero block__height-small">
-  <div class="block__hero-title"><h1>Abborre<br>Story</h1></div>
-  <div class="block__hero-image">
-    <img src="{{ urlForStatic "bg.webp" }}">
-  </div>
+<div class="blocks">
+
+<div class="block__cover" style="
+  background: no-repeat center url({{ urlForStatic "AH-ABBORRE-MÄNTYKARI-20230615-01.jpg" }});
+  background-position: top;
+  background-size: cover;
+">
+  <h2>Tarina</h2>
 </div>
 
-<div class="block__columns">
+<div class="w-large block__columns">
   <div class="block__column-1 block__quote">
     <p>Sinulla ei ole vain oikeus, vaan myös velvollisuus, puuttua tilanteeseen välittömästi jos toiminnan turvallisuus mietityttää sinua.</p>
   </div>
@@ -20,11 +23,11 @@
   </div>
 </div>
 
-<div class="block__heading">
+<div class="w-large block__heading">
   <h2>Hallitus</h2>
 </div>
 
-<div class="block__columns">
+<div class="w-large block__columns">
   <div class="block__column-1">
     <h3>Johanna</h3>
     <p>Kolmen rivin esittely. Ei tarvi enempää. Jos tätä osiota laitetaan ollenkaan.</p>
@@ -37,6 +40,8 @@
     <h3>Ja Muut :D</h3>
     <p>Kolmen rivin esittely. Ei tarvi enempää. Jos tätä osiota laitetaan ollenkaan.</p>
   </div>
+</div>
+
 </div>
 
 {{ end }}

@@ -12,4 +12,5 @@ if [ -f .env ]; then
   source .env
 fi
 
-gin --port 3000 --bin abborre --all -- -dev
+go build
+PORT=3000 DEV=true ./abborre

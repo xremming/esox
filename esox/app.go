@@ -7,6 +7,7 @@ import (
 	"io/fs"
 	"net"
 	"net/http"
+	"net/url"
 	"os"
 	"os/signal"
 	"strings"
@@ -50,7 +51,7 @@ type App struct {
 	Security        *Security
 }
 
-func (a *App) middleware(log zerolog.Logger) alice.Chain {
+func (a *App) middleware(log zerolog.Logger) (alice.Chain, error) {
 	c := alice.New()
 
 	c = c.Append(hlog.NewHandler(log))
@@ -93,14 +94,50 @@ func (a *App) middleware(log zerolog.Logger) alice.Chain {
 		})
 	})
 
-	return c
+	logger := log.With().Str("base_url", a.BaseURL).Logger()
+	if len(a.BaseURL) == 0 {
+		logger.Warn().Msg("BaseURL not set, skipping configuration of BaseURL redirect middleware.")
+		return c, nil
+	}
+
+	parsedBaseURL, err := url.Parse(a.BaseURL)
+	if err != nil {
+		return c, err
+	}
+
+	c = c.Append(func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			logger := hlog.FromRequest(r).With().
+				Str("host", r.Host).
+				Str("base_url", parsedBaseURL.String()).
+				Logger()
+
+			logger.Debug().Msg("Checking if BaseURL Middleware should redirect.")
+			if r.Host == parsedBaseURL.Host {
+				next.ServeHTTP(w, r)
+				return
+			}
+
+			newURL := parsedBaseURL.JoinPath(r.URL.RawPath)
+			newURL.RawQuery = r.URL.RawQuery
+
+			newURLValue := newURL.String()
+			logger.Info().Str("new_url", newURLValue).Msg("BaseURL Middleware redirecting to new URL.")
+			http.Redirect(w, r, newURLValue, http.StatusTemporaryRedirect)
+		})
+	})
+
+	return c, nil
 }
 
-func (a *App) Handler(ctx context.Context) http.Handler {
+func (a *App) Handler(ctx context.Context) (http.Handler, error) {
 	log := zerolog.Ctx(ctx)
 
 	mux := http.NewServeMux()
-	c := a.middleware(*log)
+	c, err := a.middleware(*log)
+	if err != nil {
+		return nil, err
+	}
 
 	mux.Handle("/static/", c.ThenFunc(staticHandler))
 
@@ -129,7 +166,7 @@ func (a *App) Handler(ctx context.Context) http.Handler {
 		mux.Handle("/", c.Then(a.Handler404))
 	}
 
-	return mux
+	return mux, nil
 }
 
 const (
@@ -180,7 +217,10 @@ func (a *App) Run(ctx context.Context, conf RunConfig) error {
 	log := setupLogger(conf.Dev)
 	ctx = a.setupCtx(ctx, log, conf)
 
-	handler := a.Handler(ctx)
+	handler, err := a.Handler(ctx)
+	if err != nil {
+		return err
+	}
 
 	// If AWS_LAMBDA_RUNTIME_API is set, start the Lambda runtime API instead.
 	if _, ok := os.LookupEnv("AWS_LAMBDA_RUNTIME_API"); ok {

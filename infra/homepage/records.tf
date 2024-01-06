@@ -1,8 +1,8 @@
 resource "aws_route53_record" "a" {
-  for_each = toset(var.aliases)
+  count = length(var.aliases)
 
-  zone_id = var.zone_id
-  name    = each.value
+  zone_id = var.aliases[count.index].zone_id
+  name    = var.aliases[count.index].name
   type    = "A"
 
   alias {
@@ -13,10 +13,10 @@ resource "aws_route53_record" "a" {
 }
 
 resource "aws_route53_record" "aaaa" {
-  for_each = toset(var.aliases)
+  count = length(var.aliases)
 
-  zone_id = var.zone_id
-  name    = each.value
+  zone_id = var.aliases[count.index].zone_id
+  name    = var.aliases[count.index].name
   type    = "AAAA"
 
   alias {

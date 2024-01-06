@@ -35,7 +35,7 @@ resource "aws_cloudfront_distribution" "default" {
   http_version    = "http3"
   price_class     = "PriceClass_All"
 
-  aliases = var.aliases
+  aliases = [for alias in var.aliases : alias.name]
 
   restrictions {
     geo_restriction {

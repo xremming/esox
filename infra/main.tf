@@ -1,22 +1,38 @@
+data "aws_route53_zone" "default" {
+  for_each = toset(local.domains)
+
+  name = each.value
+}
+
 locals {
+  domains = flatten([var.canonical_domain, var.additional_domains])
+
   homepage = {
     dev = {
-      aliases             = ["dev.${var.domain_name}"],
+      aliases = [for domain in local.domains : {
+        name    = "dev.${domain}",
+        zone_id = data.aws_route53_zone.default[domain].zone_id,
+      }]
       detailed_monitoring = false,
     },
     test = {
-      aliases             = ["test.${var.domain_name}"],
+      aliases = [for domain in local.domains : {
+        name    = "test.${domain}",
+        zone_id = data.aws_route53_zone.default[domain].zone_id,
+      }],
       detailed_monitoring = false,
     },
     prod = {
-      aliases             = ["www.${var.domain_name}", "${var.domain_name}"],
+      aliases = flatten([for domain in local.domains : [{
+        name    = "${domain}",
+        zone_id = data.aws_route53_zone.default[domain].zone_id,
+        }, {
+        name    = "www.${domain}",
+        zone_id = data.aws_route53_zone.default[domain].zone_id,
+      }]]),
       detailed_monitoring = true,
     },
   }
-}
-
-data "aws_route53_zone" "default" {
-  name = var.domain_name
 }
 
 module "homepage" {
@@ -26,7 +42,6 @@ module "homepage" {
 
   env                 = each.key
   aliases             = each.value.aliases
-  zone_id             = data.aws_route53_zone.default.zone_id
   cert_arn            = aws_acm_certificate.cert.arn
   detailed_monitoring = each.value.detailed_monitoring
 }

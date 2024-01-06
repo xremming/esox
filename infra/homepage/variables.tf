@@ -4,18 +4,16 @@ variable "env" {
 }
 
 variable "aliases" {
-  type     = list(string)
+  type = list(object({
+    name    = string,
+    zone_id = string,
+  }))
   nullable = false
 
   validation {
     condition     = length(var.aliases) > 0
     error_message = "aliases must contain at least one value"
   }
-}
-
-variable "zone_id" {
-  type     = string
-  nullable = false
 }
 
 variable "cert_arn" {

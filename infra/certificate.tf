@@ -1,9 +1,12 @@
 resource "aws_acm_certificate" "cert" {
   provider = aws.us-east-1
 
-  domain_name               = var.domain_name
-  validation_method         = "DNS"
-  subject_alternative_names = ["*.${var.domain_name}"]
+  domain_name       = var.canonical_domain
+  validation_method = "DNS"
+  subject_alternative_names = concat(
+    ["*.${var.canonical_domain}"],
+    flatten([for domain in var.additional_domains : ["${domain}", "*.${domain}"]]),
+  )
 
   lifecycle {
     create_before_destroy = true
@@ -20,7 +23,7 @@ resource "aws_route53_record" "cert" {
   }
 
   allow_overwrite = true
-  zone_id         = data.aws_route53_zone.default.zone_id
+  zone_id         = data.aws_route53_zone.default[trimprefix(each.key, "*.")].zone_id
   name            = each.value.name
   records         = [each.value.record]
   ttl             = 60

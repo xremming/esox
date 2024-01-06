@@ -143,7 +143,7 @@ type RunConfig struct {
 	ShutdownTimeout time.Duration
 }
 
-func (a *App) setupCtx(ctx context.Context, log zerolog.Logger) context.Context {
+func (a *App) setupCtx(ctx context.Context, log zerolog.Logger, conf RunConfig) context.Context {
 	ctx = log.WithContext(ctx)
 
 	if a.CSRF != nil {
@@ -173,12 +173,12 @@ func (a *App) setupCtx(ctx context.Context, log zerolog.Logger) context.Context 
 	}
 	ctx = context.WithValue(ctx, nameMappingKey{}, nameMapping)
 
-	return ctx
+	return context.WithValue(ctx, runConfigKey{}, conf)
 }
 
 func (a *App) Run(ctx context.Context, conf RunConfig) error {
 	log := setupLogger(conf.Dev)
-	ctx = a.setupCtx(ctx, log)
+	ctx = a.setupCtx(ctx, log, conf)
 
 	handler := a.Handler(ctx)
 

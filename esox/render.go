@@ -24,16 +24,14 @@ type Template struct {
 
 const TemplatesPrefix = "templates"
 
-func GetTemplate(name, baseName string) *Template {
-	out := Template{name: name, baseName: baseName}
-
-	baseFile, err := os.Open(filepath.Join(TemplatesPrefix, baseName))
+func (t *Template) reload() {
+	baseFile, err := os.Open(filepath.Join(TemplatesPrefix, t.baseName))
 	if err != nil {
 		panic(err)
 	}
 	defer baseFile.Close()
 
-	childFile, err := os.Open(filepath.Join(TemplatesPrefix, name))
+	childFile, err := os.Open(filepath.Join(TemplatesPrefix, t.name))
 	if err != nil {
 		panic(err)
 	}
@@ -43,13 +41,18 @@ func GetTemplate(name, baseName string) *Template {
 	if err != nil {
 		panic(err)
 	}
-	out.baseTemplate = string(baseContent)
+	t.baseTemplate = string(baseContent)
 
 	childContent, err := io.ReadAll(childFile)
 	if err != nil {
 		panic(err)
 	}
-	out.childTemplate = string(childContent)
+	t.childTemplate = string(childContent)
+}
+
+func GetTemplate(name, baseName string) *Template {
+	out := Template{name: name, baseName: baseName}
+	out.reload()
 
 	return &out
 }
@@ -186,6 +189,11 @@ func (t *Template) funcs(ctx context.Context) template.FuncMap {
 }
 
 func (t *Template) Render(w http.ResponseWriter, r *http.Request, code int, data RenderData) {
+	runConfig := GetRunConfig(r.Context())
+	if runConfig.Dev {
+		t.reload()
+	}
+
 	log := hlog.FromRequest(r).With().
 		Int("code", code).
 		Str("template", t.name).

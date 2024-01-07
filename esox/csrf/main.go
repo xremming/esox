@@ -22,10 +22,10 @@ func getCSRF(r *http.Request) string {
 	} else if t := r.URL.Query().Get("_csrf"); len(t) > 0 {
 		log.Debug().Msg("CSRF token found in query parameter _csrf.")
 		return t
-	} else if t := r.Header.Get("X-CSRF-TOKEN"); len(t) > 0 {
+	} else if t := r.Header.Get("X-CSRF-Token"); len(t) > 0 {
 		log.Debug().Msg("CSRF token found in header X-CSRF-TOKEN.")
 		return t
-	} else if t := r.Header.Get("X-XSRF-TOKEN"); len(t) > 0 {
+	} else if t := r.Header.Get("X-XSRF-Token"); len(t) > 0 {
 		log.Debug().Msg("CSRF token found in header X-XSRF-TOKEN.")
 		return t
 	}

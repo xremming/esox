@@ -16,7 +16,7 @@ func init() {
 		err error
 	)
 	buf.WriteString("test")
-	testHash, _, err = hash(&buf)
+	testHash, _, err = integrityHash(&buf)
 	if err != nil {
 		panic(err)
 	}

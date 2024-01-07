@@ -1,7 +1,10 @@
 package esox
 
 import (
+	"bytes"
 	"context"
+	"crypto/sha256"
+	"encoding/base64"
 	"fmt"
 	"html/template"
 	"io"
@@ -94,6 +97,8 @@ func setFlashCookie(w http.ResponseWriter, r *http.Request, redirect bool, flash
 }
 
 type RenderData interface {
+	ModTime() (lastModified time.Time)
+	CacheControl() (public bool, maxAge time.Duration)
 	SetFlashes(flashes []flash.Data)
 }
 
@@ -208,14 +213,14 @@ func (t *Template) Render(w http.ResponseWriter, r *http.Request, code int, data
 		Funcs(t.funcs(r.Context())).
 		Parse(t.baseTemplate)
 	if err != nil {
-		log.Error().Err(err).Msg("failed to parse base template")
+		log.Err(err).Msg("failed to parse base template")
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
 	}
 
 	tmpl, err = tmpl.Parse(t.childTemplate)
 	if err != nil {
-		log.Error().Err(err).Msg("failed to parse child template")
+		log.Err(err).Msg("failed to parse child template")
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
 	}
@@ -223,19 +228,45 @@ func (t *Template) Render(w http.ResponseWriter, r *http.Request, code int, data
 	buf := utils.GetBytesBuffer()
 	defer utils.PutBytesBuffer(buf)
 
-	err = tmpl.Execute(buf, data)
+	h := sha256.New()
+	out := io.MultiWriter(buf, h)
+
+	err = tmpl.Execute(out, data)
 	if err != nil {
-		log.Error().Err(err).Msg("failed to execute template")
+		log.Err(err).Msg("failed to execute template")
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
 	}
 
-	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	w.WriteHeader(code)
+	// When the code is not 200 we cannot be sure whether the content may be cached.
+	if code == http.StatusOK {
+		etag := fmt.Sprintf(`"%s"`, base64.URLEncoding.EncodeToString(h.Sum(nil)))
+		w.Header().Set("ETag", etag)
 
-	_, err = buf.WriteTo(w)
+		public, maxAge := data.CacheControl()
+		if maxAge > 0 {
+			prefix := "private "
+			if public {
+				prefix = ""
+			}
+
+			cacheControl := fmt.Sprintf("%smax-age=%d", prefix, int(maxAge.Seconds()))
+			w.Header().Set("Cache-Control", cacheControl)
+		}
+	}
+
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+
+	// The http.ServeContent function is only guaranteed to work correctly when the status code is 200.
+	if code == http.StatusOK {
+		http.ServeContent(w, r, t.name, data.ModTime(), bytes.NewReader(buf.Bytes()))
+		return
+	}
+
+	w.WriteHeader(code)
+	_, err = io.Copy(w, buf)
 	if err != nil {
-		log.Error().Err(err).Msg("failed to write template to response")
+		log.Err(err).Msg("Failed to write response body.")
 	}
 }
 

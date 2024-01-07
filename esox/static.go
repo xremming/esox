@@ -21,7 +21,7 @@ const StaticPrefix = "static"
 
 const hashLength = 2 * sha256.Size
 
-func hash(r io.Reader) (pathHash string, integrity string, err error) {
+func integrityHash(r io.Reader) (pathHash string, integrity string, err error) {
 	h := sha256.New()
 
 	_, err = io.Copy(h, r)
@@ -88,7 +88,7 @@ func GetStaticFile(staticPath string) (StaticFile, error) {
 		return StaticFile{}, err
 	}
 
-	pathHash, integrity, err := hash(file)
+	pathHash, integrity, err := integrityHash(file)
 	if err != nil {
 		return StaticFile{}, err
 	}

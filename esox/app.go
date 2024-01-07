@@ -95,7 +95,7 @@ func (a *App) middleware(log zerolog.Logger) (alice.Chain, error) {
 	})
 
 	logger := log.With().Str("base_url", a.BaseURL).Logger()
-	if len(a.BaseURL) == 0 {
+	if a.BaseURL == "" {
 		logger.Warn().Msg("BaseURL not set, skipping configuration of BaseURL redirect middleware.")
 		return c, nil
 	}

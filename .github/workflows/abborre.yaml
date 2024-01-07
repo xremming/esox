@@ -71,9 +71,9 @@ jobs:
       matrix:
         include:
           - env: "test"
-            url: "https://test.abborre.net"
+            url: "https://test.abborre.fi"
           - env: "prod"
-            url: "https://www.abborre.net"
+            url: "https://abborre.fi"
     environment:
       name: "${{ matrix.env }}"
       url: "${{ matrix.url }}"

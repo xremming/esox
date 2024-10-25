@@ -9,8 +9,8 @@ import (
 	"time"
 
 	"github.com/rs/zerolog"
-	"github.com/xremming/abborre/esox"
-	"github.com/xremming/abborre/esox/csrf"
+	"github.com/xremming/esox"
+	"github.com/xremming/esox/csrf"
 )
 
 type FormBuilder struct {

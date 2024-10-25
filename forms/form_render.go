@@ -4,7 +4,7 @@ import (
 	_ "embed"
 	"html/template"
 
-	"github.com/xremming/abborre/esox/utils"
+	"github.com/xremming/esox/utils"
 )
 
 //go:embed templates/form_div.html

@@ -14,8 +14,8 @@ import (
 	"time"
 
 	"github.com/rs/zerolog/hlog"
-	"github.com/xremming/abborre/esox/flash"
-	"github.com/xremming/abborre/esox/utils"
+	"github.com/xremming/esox/flash"
+	"github.com/xremming/esox/utils"
 )
 
 type Template struct {

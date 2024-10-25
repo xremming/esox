@@ -18,7 +18,7 @@ import (
 	"github.com/justinas/alice"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/hlog"
-	"github.com/xremming/abborre/esox/csrf"
+	"github.com/xremming/esox/csrf"
 )
 
 type XFrameOptions string

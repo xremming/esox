@@ -1,6 +1,0 @@
-{
-  "name": "abborre",
-  "dependencies": {
-    "@hotwired/turbo": "^7.3.0"
-  }
-}

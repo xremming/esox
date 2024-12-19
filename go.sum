@@ -18,6 +18,8 @@ github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue v1.15.20 h1:bwHhhCS
 github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue v1.15.20/go.mod h1:/RfYH8CUMQuq/3CIEVGHLkqkA9KtbBF5omt2Ae8xc0s=
 github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue v1.15.21 h1:FdDxp4HNtJWPBAOdkJ+84Dfx2TOA7Dq+cH72GDHhjnA=
 github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue v1.15.21/go.mod h1:doHEXGiMWQBxcTJy3YN1Ao2HCgCuMWumuvTULGndCuQ=
+github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue v1.15.22 h1:p2LDiYhvM9mMExEY1meHMAmjmVlzD1J1jVG+fGut+mE=
+github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue v1.15.22/go.mod h1:fo5T2fYMHVF2rHrym50h7Ue/+SECRJlUHUFZLjSX18g=
 github.com/aws/aws-sdk-go-v2/feature/dynamodb/expression v1.7.47 h1:y1nZp5kxB+8fSrUYzxZOLodKZVl3SYsQrXBvw+I1Fro=
 github.com/aws/aws-sdk-go-v2/feature/dynamodb/expression v1.7.47/go.mod h1:M3vIEIzJMTp+32Jpxontmd5KqkrwiGRlnkk4EFQsQ+Y=
 github.com/aws/aws-sdk-go-v2/feature/dynamodb/expression v1.7.48 h1:tWJLHTWoBRpldEwW1K/GNOd9Zkij+2K7wE1gNN78kGM=
@@ -34,6 +36,8 @@ github.com/aws/aws-sdk-go-v2/feature/dynamodb/expression v1.7.55 h1:jOpt0SW0FXiG
 github.com/aws/aws-sdk-go-v2/feature/dynamodb/expression v1.7.55/go.mod h1:0WtmK8OKslZs07iPHfRCR3m8QxB9B8NyBAe5u1s1ghU=
 github.com/aws/aws-sdk-go-v2/feature/dynamodb/expression v1.7.56 h1:LBLyOZPVFt53RvSOvzAfEs1lagLhNQQUO0q2gKpaNcQ=
 github.com/aws/aws-sdk-go-v2/feature/dynamodb/expression v1.7.56/go.mod h1:Ul6ESIrlilRfsKcbXX+OKR5YNByw8UOutPrhlFKEOFA=
+github.com/aws/aws-sdk-go-v2/feature/dynamodb/expression v1.7.57 h1:5Pkmgr/HIgteZAXGHln1Y1X7wpI9+fyLe7T88utRRPk=
+github.com/aws/aws-sdk-go-v2/feature/dynamodb/expression v1.7.57/go.mod h1:bCsUt9VsF1M4bb3ZKnpq88rvvq/XxtBJSt6/QUZzIKU=
 github.com/aws/aws-sdk-go-v2/internal/configsources v1.3.21 h1:UAsR3xA31QGf79WzpG/ixT9FZvQlh5HY1NRqSHBNOCk=
 github.com/aws/aws-sdk-go-v2/internal/configsources v1.3.21/go.mod h1:JNr43NFf5L9YaG3eKTm7HQzls9J+A9YYcGI5Quh1r2Y=
 github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.6.21 h1:6jZVETqmYCadGFvrYEQfC5fAQmlo80CeL5psbno6r0s=
@@ -52,6 +56,8 @@ github.com/aws/aws-sdk-go-v2/service/dynamodb v1.37.1 h1:vucMirlM6D+RDU8ncKaSZ/5
 github.com/aws/aws-sdk-go-v2/service/dynamodb v1.37.1/go.mod h1:fceORfs010mNxZbQhfqUjUeHlTwANmIT4mvHamuUaUg=
 github.com/aws/aws-sdk-go-v2/service/dynamodb v1.38.0 h1:isKhHsjpQR3CypQJ4G1g8QWx7zNpiC/xKw1zjgJYVno=
 github.com/aws/aws-sdk-go-v2/service/dynamodb v1.38.0/go.mod h1:xDvUyIkwBwNtVZJdHEwAuhFly3mezwdEWkbJ5oNYwIw=
+github.com/aws/aws-sdk-go-v2/service/dynamodb v1.38.1 h1:AnSNs7Ogi0LXHPMDBx4RE7imU4/JmzWFziqkMKJA2AY=
+github.com/aws/aws-sdk-go-v2/service/dynamodb v1.38.1/go.mod h1:J8xqRbx7HIc8ids2P8JbrKx9irONPEYq7Z1FpLDpi3I=
 github.com/aws/aws-sdk-go-v2/service/dynamodbstreams v1.24.2 h1:E7Tuo0ipWpBl0f3uThz8cZsuyD5H8jLCnbtbKR4YL2s=
 github.com/aws/aws-sdk-go-v2/service/dynamodbstreams v1.24.2/go.mod h1:txOfweuNPBLhHodsV+C2lvPPRTommVTWbts9SZV6Myc=
 github.com/aws/aws-sdk-go-v2/service/dynamodbstreams v1.24.3 h1:BjzvhVB6Nnx+Xqlnc5JWkQYuWClxUFcvLzZIqFO31lI=
@@ -66,6 +72,8 @@ github.com/aws/aws-sdk-go-v2/service/dynamodbstreams v1.24.8 h1:ntqHwZb+ZyVz0CFY
 github.com/aws/aws-sdk-go-v2/service/dynamodbstreams v1.24.8/go.mod h1:Hcjb2SiUo9v1GhpXjRNW7hAwfzAPfrsgnlKpP5UYEPY=
 github.com/aws/aws-sdk-go-v2/service/dynamodbstreams v1.24.9 h1:yhB2XYpHeWeAv5u3w9PFiSVIariSyhK5jcyQUFJpnIQ=
 github.com/aws/aws-sdk-go-v2/service/dynamodbstreams v1.24.9/go.mod h1:Hcjb2SiUo9v1GhpXjRNW7hAwfzAPfrsgnlKpP5UYEPY=
+github.com/aws/aws-sdk-go-v2/service/dynamodbstreams v1.24.10 h1:aWEbNPNdGiTGSR6/Yy9S0Ad07sMVaT/CFaVq7GuDGx4=
+github.com/aws/aws-sdk-go-v2/service/dynamodbstreams v1.24.10/go.mod h1:HywkMgYwY0uaybPvvctx6fkm3L1ssRKeGv7TPZ6OQ/M=
 github.com/aws/aws-sdk-go-v2/service/internal/accept-encoding v1.12.0 h1:TToQNkvGguu209puTojY/ozlqy2d/SFNcoLIqTFi42g=
 github.com/aws/aws-sdk-go-v2/service/internal/accept-encoding v1.12.0/go.mod h1:0jp+ltwkf+SwG2fm/PKo8t4y8pJSgOCO4D8Lz3k0aHQ=
 github.com/aws/aws-sdk-go-v2/service/internal/endpoint-discovery v1.10.2 h1:1G7TTQNPNv5fhCyIQGYk8FOggLgkzKq6c4Y1nOGzAOE=

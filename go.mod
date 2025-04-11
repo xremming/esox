@@ -6,9 +6,9 @@ toolchain go1.24.2
 
 require (
 	github.com/aws/aws-lambda-go v1.48.0
-	github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue v1.18.11
-	github.com/aws/aws-sdk-go-v2/feature/dynamodb/expression v1.7.78
-	github.com/aws/aws-sdk-go-v2/service/dynamodb v1.42.3
+	github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue v1.18.12
+	github.com/aws/aws-sdk-go-v2/feature/dynamodb/expression v1.7.79
+	github.com/aws/aws-sdk-go-v2/service/dynamodb v1.42.4
 	github.com/justinas/alice v1.2.0
 	github.com/rs/xid v1.6.0
 	github.com/rs/zerolog v1.34.0

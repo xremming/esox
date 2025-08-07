@@ -2,7 +2,7 @@ module github.com/xremming/esox
 
 go 1.22
 
-toolchain go1.24.3
+toolchain go1.24.6
 
 require (
 	github.com/aws/aws-lambda-go v1.48.0

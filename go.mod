@@ -6,9 +6,9 @@ toolchain go1.24.3
 
 require (
 	github.com/aws/aws-lambda-go v1.48.0
-	github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue v1.19.0
-	github.com/aws/aws-sdk-go-v2/feature/dynamodb/expression v1.7.82
-	github.com/aws/aws-sdk-go-v2/service/dynamodb v1.43.1
+	github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue v1.20.2
+	github.com/aws/aws-sdk-go-v2/feature/dynamodb/expression v1.8.2
+	github.com/aws/aws-sdk-go-v2/service/dynamodb v1.46.0
 	github.com/justinas/alice v1.2.0
 	github.com/rs/xid v1.6.0
 	github.com/rs/zerolog v1.34.0
@@ -16,8 +16,8 @@ require (
 )
 
 require (
-	github.com/aws/aws-sdk-go-v2/service/dynamodbstreams v1.25.3 // indirect
-	github.com/aws/smithy-go v1.22.2 // indirect
+	github.com/aws/aws-sdk-go-v2/service/dynamodbstreams v1.28.0 // indirect
+	github.com/aws/smithy-go v1.22.5 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/kr/text v0.2.0 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect

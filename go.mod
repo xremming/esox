@@ -5,7 +5,7 @@ go 1.22
 toolchain go1.25.1
 
 require (
-	github.com/aws/aws-lambda-go v1.48.0
+	github.com/aws/aws-lambda-go v1.49.0
 	github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue v1.20.12
 	github.com/aws/aws-sdk-go-v2/feature/dynamodb/expression v1.8.12
 	github.com/aws/aws-sdk-go-v2/service/dynamodb v1.50.4
